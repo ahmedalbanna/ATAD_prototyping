@@ -4,7 +4,7 @@ import { Plus, Search, Edit3 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
-import { assetStatusLabels, assetStatusColors } from "../data/mock";
+import { assetStatusLabels, assetStatusColors, assets as mockAssets, normalizeAsset } from "../data/mock";
 
 export default function LessorAssets() {
   const navigate = useNavigate();
@@ -14,7 +14,13 @@ export default function LessorAssets() {
   const [filterStatus, setFilterStatus] = useState("all");
 
   const fetchAssets = () => {
-    if (user) api.get(`/assets?owner_id=${user.id}`).then(setAssets).catch(() => {});
+    if (user) {
+      api.get(`/assets?owner_id=${user.id}`).then(data => {
+        setAssets(data.data || data);
+      }).catch(() => {
+        setAssets(mockAssets.filter(a => String(a.ownerId) === String(user.id)).map(normalizeAsset));
+      });
+    }
   };
 
   useEffect(() => { fetchAssets(); }, [user]);

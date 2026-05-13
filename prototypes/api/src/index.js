@@ -43,8 +43,9 @@ app.use((req, res) => {
 // Error handler (must be last)
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`ATAD API running on http://localhost:${PORT}`);
+const HOST = process.env.HOST || "0.0.0.0";
+app.listen(PORT, HOST, () => {
+  console.log(`ATAD API running on http://${HOST}:${PORT}`);
 });
 
 export default app;

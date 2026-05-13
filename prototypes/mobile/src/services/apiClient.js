@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://185.190.140.93:3001/api/v1";
 
 let token = localStorage.getItem("atad_token");
 

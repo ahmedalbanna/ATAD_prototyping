@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
 import AssetCard from "../components/AssetCard";
-import { categories } from "../data/mock";
+import { categories, assets as mockAssets, normalizeAsset } from "../data/mock";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -14,7 +14,11 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState("الكل");
 
   useEffect(() => {
-    api.get("/assets").then(setAssets).catch(() => {});
+    api.get("/assets").then(data => {
+      setAssets(data.data || data);
+    }).catch(() => {
+      setAssets(mockAssets.map(normalizeAsset));
+    });
   }, []);
 
   const filtered = activeCategory === "الكل" ? assets : assets.filter(a => a.category === activeCategory);

@@ -38,11 +38,20 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const login = useCallback((phone, role = "tenant", name = null) => {
+  const login = useCallback(async (phone, role = "tenant", name = null) => {
     const existing = mockUsers.find(u => u.phone === phone);
+    const fullPhone = `+966${phone}`;
     const u = existing || { id: Date.now(), name: name || `مستخدم ${phone.slice(-4)}`, phone, role };
-    setUser(u);
-    return u;
+    try {
+      await api.post("/auth/send-otp", { phone: fullPhone, role, name: u.name });
+      const result = await api.post("/auth/verify-otp", { phone: fullPhone, otp: "000000" });
+      if (result.token) api.setToken(result.token);
+      setUser(result.user || u);
+      return result.user || u;
+    } catch {
+      setUser(u);
+      return u;
+    }
   }, []);
 
   const switchUser = useCallback((targetUser) => {

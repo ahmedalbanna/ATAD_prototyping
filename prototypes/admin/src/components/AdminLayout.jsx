@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, Package, ClipboardList, Wallet, Menu, X, ChevronLeft, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Package, ClipboardList, Wallet, Menu, X, ChevronLeft, LogOut, Mail, Lock } from "lucide-react";
 import Logo from "./Logo";
 import { adminLogin, adminLogout } from "../services/apiClient";
 
@@ -18,17 +18,35 @@ export default function AdminLayout({ children, title }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [ready, setReady] = useState(false);
   const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem("atad_admin_token"));
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
 
   useEffect(() => {
-    adminLogin().then((ok) => {
-      setLoggedIn(ok);
+    if (localStorage.getItem("atad_admin_token")) {
       setReady(true);
-    });
+    } else {
+      setReady(true);
+    }
   }, []);
+
+  const handleLogin = async () => {
+    setLoggingIn(true);
+    setLoginError("");
+    const ok = await adminLogin(loginEmail, loginPassword);
+    if (ok) {
+      setLoggedIn(true);
+    } else {
+      setLoginError("فشل تسجيل الدخول. تحقق من البريد الإلكتروني وكلمة المرور");
+    }
+    setLoggingIn(false);
+  };
 
   const handleLogout = () => {
     adminLogout();
     setLoggedIn(false);
+    localStorage.removeItem("atad_admin_user");
     navigate("/admin/login");
   };
 
@@ -51,11 +69,35 @@ export default function AdminLayout({ children, title }) {
             <span className="text-2xl font-black text-white">عت</span>
           </div>
           <h1 className="text-xl font-bold text-gray-900 mb-1">لوحة التحكم</h1>
-          <p className="text-sm text-gray-400 mb-6">يرجى تسجيل الدخول للمتابعة</p>
-          <button onClick={() => { adminLogin().then(setLoggedIn); }}
-            className="w-full bg-primary text-white font-bold py-3 btn-pill hover:bg-primary-dark transition-all">
-            تسجيل الدخول كمدير
-          </button>
+          <p className="text-sm text-gray-400 mb-6">تسجيل الدخول إلى لوحة التحكم</p>
+          {loginError && (
+            <div className="bg-red-50 text-red-600 text-sm rounded-xl p-3 mb-4 border border-red-100">{loginError}</div>
+          )}
+          <div className="text-right space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">البريد الإلكتروني</label>
+              <div className="relative">
+                <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)}
+                  placeholder="admin@atad.sa" dir="ltr"
+                  className="w-full pr-10 pl-4 py-2.5 border border-gray-200 rounded-xl text-sm text-right focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">كلمة المرور</label>
+              <div className="relative">
+                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                <input type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)}
+                  placeholder="••••••" dir="ltr"
+                  onKeyDown={e => e.key === "Enter" && handleLogin()}
+                  className="w-full pr-10 pl-4 py-2.5 border border-gray-200 rounded-xl text-sm text-right focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+              </div>
+            </div>
+            <button onClick={handleLogin} disabled={loggingIn}
+              className="w-full bg-primary text-white font-bold py-3 btn-pill hover:bg-primary-dark transition-all disabled:opacity-50">
+              {loggingIn ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+            </button>
+          </div>
         </div>
       </div>
     );

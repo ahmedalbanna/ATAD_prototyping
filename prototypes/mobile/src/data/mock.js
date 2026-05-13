@@ -3,6 +3,19 @@ export const users = [
   { id: 2, name: "سارة القحطاني", phone: "555654321", role: "lessor" },
 ];
 
+export const normalizeAsset = (a) => ({
+  id: a.id,
+  title: a.title,
+  description: a.description,
+  category: a.category,
+  price_per_day: a.pricePerDay,
+  city: a.city,
+  image_url: a.image,
+  rating: a.rating,
+  status: a.status,
+  owner: { id: a.ownerId, name: a.ownerName },
+});
+
 export const categories = [
   "الكل", "معدات ثقيلة", "مركبات", "معدات كهربائية", "معدات بناء", "معدات صناعية", "أدوات يدوية"
 ];

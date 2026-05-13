@@ -1,0 +1,20 @@
+{
+  "name": "atad-prototyping",
+  "version": "0.1.0",
+  "description": "ATAD Equipment Rental Platform - Prototypes",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm:dev:api\" \"npm:dev:admin\" \"npm:dev:mobile\"",
+    "dev:api": "cd prototypes/api && npm run dev",
+    "dev:admin": "cd prototypes/admin && npm run dev",
+    "dev:mobile": "cd prototypes/mobile && npm run dev",
+    "build": "concurrently \"npm:build:api\" \"npm:build:admin\" \"npm:build:mobile\"",
+    "build:api": "cd prototypes/api && npm run build",
+    "build:admin": "cd prototypes/admin && npm run build",
+    "build:mobile": "cd prototypes/mobile && npm run build",
+    "reset": "cd prototypes/api && npm run reset"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -3,7 +3,7 @@ import { Search, ArrowUpDown } from "lucide-react";
 import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
 import AssetCard from "../components/AssetCard";
-import { categories } from "../data/mock";
+import { categories, assets as mockAssets, normalizeAsset } from "../data/mock";
 
 export default function AssetList() {
   const [allAssets, setAllAssets] = useState([]);
@@ -12,7 +12,11 @@ export default function AssetList() {
   const [sortBy, setSortBy] = useState("");
 
   useEffect(() => {
-    api.get("/assets").then(setAllAssets).catch(() => {});
+    api.get("/assets").then(data => {
+      setAllAssets(data.data || data);
+    }).catch(() => {
+      setAllAssets(mockAssets.map(normalizeAsset));
+    });
   }, []);
 
   const filtered = allAssets

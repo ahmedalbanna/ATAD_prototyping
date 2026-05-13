@@ -6,6 +6,11 @@ export function findByPhone(phone) {
   return result.rows[0] || null;
 }
 
+export function findByEmail(email) {
+  const result = query("SELECT * FROM users WHERE email = ?", [email]);
+  return result.rows[0] || null;
+}
+
 export function findById(id) {
   const result = query("SELECT * FROM users WHERE id = ?", [id]);
   return result.rows[0] || null;
@@ -14,8 +19,8 @@ export function findById(id) {
 export function create(data) {
   const id = randomUUID();
   query(
-    "INSERT INTO users (id, name, phone, role) VALUES (?, ?, ?, ?)",
-    [id, data.name, data.phone, data.role],
+    "INSERT INTO users (id, name, phone, role, email, password) VALUES (?, ?, ?, ?, ?, ?)",
+    [id, data.name, data.phone, data.role, data.email || null, data.password || null],
   );
   return findById(id);
 }

@@ -1,22 +1,18 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://185.190.140.93:3001/api/v1";
 
 let token = localStorage.getItem("atad_admin_token");
 
-export async function adminLogin() {
-  const phone = "+966555000000";
+export async function adminLogin(email, password) {
   try {
-    await fetch(`${BASE_URL}/auth/send-otp`, {
+    const res = await fetch(`${BASE_URL}/auth/admin-login`, {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, role: "admin" }),
+      body: JSON.stringify({ email, password }),
     });
-    const otpRes = await fetch(`${BASE_URL}/auth/verify-otp`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, otp: localStorage.getItem("atad_admin_otp") || "000000" }),
-    });
-    const data = await otpRes.json();
+    const data = await res.json();
     if (data.success) {
       token = data.token;
       localStorage.setItem("atad_admin_token", token);
+      localStorage.setItem("atad_admin_user", JSON.stringify(data.user));
     }
     return data.success;
   } catch {
