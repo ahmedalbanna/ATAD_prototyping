@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Search, Users as UsersIcon, Phone, Calendar, Activity } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
-import { users } from "../data/mock";
+import { api } from "../services/apiClient";
 
 const roleLabels = { tenant: "مستأجر", lessor: "مؤجر", admin: "مدير" };
 const roleColors = {
@@ -12,8 +12,11 @@ const roleColors = {
 };
 
 export default function Users() {
+  const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("all");
+
+  useEffect(() => { api.get("/admin/users").then(setUsers).catch(() => {}); }, []);
 
   const filtered = users
     .filter(u => filterRole === "all" || u.role === filterRole)
@@ -22,7 +25,6 @@ export default function Users() {
   return (
     <AdminLayout title="المستخدمين">
       <div className="bg-white rounded-2xl border border-gray-100/80 shadow-sm overflow-hidden">
-        {/* Filters */}
         <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -34,9 +36,7 @@ export default function Users() {
             {["all", "tenant", "lessor", "admin"].map(r => (
               <button key={r} onClick={() => setFilterRole(r)}
                 className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                  filterRole === r
-                    ? "bg-primary text-white shadow-sm"
-                    : "bg-gray-50 text-gray-500 border border-gray-200/80 hover:border-gray-300"
+                  filterRole === r ? "bg-primary text-white shadow-sm" : "bg-gray-50 text-gray-500 border border-gray-200/80 hover:border-gray-300"
                 }`}>
                 {r === "all" ? "الكل" : roleLabels[r]}
               </button>
@@ -45,7 +45,6 @@ export default function Users() {
           <span className="text-xs text-gray-400 self-center bg-gray-50 px-2.5 py-1 rounded-full">{filtered.length} مستخدم</span>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -55,7 +54,6 @@ export default function Users() {
                 <th className="text-right p-3 font-semibold"><Phone className="w-3 h-3 inline ml-1" />رقم الجوال</th>
                 <th className="text-right p-3 font-semibold">نوع الحساب</th>
                 <th className="text-right p-3 font-semibold"><Calendar className="w-3 h-3 inline ml-1" />تاريخ التسجيل</th>
-                <th className="text-center p-3 font-semibold"><Activity className="w-3 h-3 inline ml-1" />نشاط</th>
               </tr>
             </thead>
             <tbody>
@@ -67,18 +65,13 @@ export default function Users() {
                       {user.name}
                     </Link>
                   </td>
-                  <td className="p-3 text-gray-500" dir="ltr">+967 {user.phone}</td>
+                  <td className="p-3 text-gray-500" dir="ltr">{user.phone}</td>
                   <td className="p-3">
                     <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${roleColors[user.role]}`}>
                       {roleLabels[user.role]}
                     </span>
                   </td>
-                  <td className="p-3 text-gray-400 text-xs">{user.joinedAt}</td>
-                  <td className="p-3 text-center">
-                    <span className="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">
-                      {user.bookingsCount !== undefined ? `${user.bookingsCount} حجوزات` : `${user.assetsCount} أصول`}
-                    </span>
-                  </td>
+                  <td className="p-3 text-gray-400 text-xs">{user.created_at?.slice(0, 10)}</td>
                 </tr>
               ))}
             </tbody>

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Search, Package, MapPin, DollarSign, Calendar } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
-import { assets } from "../data/mock";
+import { api } from "../services/apiClient";
 
 const statusLabels = { available: "متاح", rented: "مؤجر", maintenance: "صيانة" };
 const statusColors = {
@@ -12,12 +12,15 @@ const statusColors = {
 };
 
 export default function AdminAssets() {
+  const [assets, setAssets] = useState([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
 
+  useEffect(() => { api.get("/admin/assets").then(setAssets).catch(() => {}); }, []);
+
   const filtered = assets
     .filter(a => filterStatus === "all" || a.status === filterStatus)
-    .filter(a => a.title.includes(search) || a.ownerName.includes(search) || a.city.includes(search));
+    .filter(a => a.title.includes(search) || a.owner_name?.includes(search) || a.city.includes(search));
 
   return (
     <AdminLayout title="الأصول">
@@ -33,9 +36,7 @@ export default function AdminAssets() {
             {["all", "available", "rented", "maintenance"].map(s => (
               <button key={s} onClick={() => setFilterStatus(s)}
                 className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                  filterStatus === s
-                    ? "bg-primary text-white shadow-sm"
-                    : "bg-gray-50 text-gray-500 border border-gray-200/80 hover:border-gray-300"
+                  filterStatus === s ? "bg-primary text-white shadow-sm" : "bg-gray-50 text-gray-500 border border-gray-200/80 hover:border-gray-300"
                 }`}>
                 {s === "all" ? "الكل" : statusLabels[s]}
               </button>
@@ -54,7 +55,6 @@ export default function AdminAssets() {
                 <th className="text-right p-3 font-semibold"><DollarSign className="w-3 h-3 inline ml-1" />السعر/يوم</th>
                 <th className="text-right p-3 font-semibold"><MapPin className="w-3 h-3 inline ml-1" />المدينة</th>
                 <th className="text-right p-3 font-semibold">الحالة</th>
-                <th className="text-center p-3 font-semibold"><Calendar className="w-3 h-3 inline ml-1" />حجوزات</th>
               </tr>
             </thead>
             <tbody>
@@ -66,15 +66,14 @@ export default function AdminAssets() {
                       {asset.title}
                     </Link>
                   </td>
-                  <td className="p-3 text-gray-500">{asset.ownerName}</td>
-                  <td className="p-3 font-semibold text-gray-900">{asset.pricePerDay} ﷼</td>
+                  <td className="p-3 text-gray-500">{asset.owner_name}</td>
+                  <td className="p-3 font-semibold text-gray-900">{asset.price_per_day} ﷼</td>
                   <td className="p-3 text-gray-400">{asset.city}</td>
                   <td className="p-3">
                     <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[asset.status]}`}>
                       {statusLabels[asset.status]}
                     </span>
                   </td>
-                  <td className="p-3 text-center text-gray-400 text-xs bg-gray-50/50 rounded mx-2">{asset.bookingsCount}</td>
                 </tr>
               ))}
             </tbody>

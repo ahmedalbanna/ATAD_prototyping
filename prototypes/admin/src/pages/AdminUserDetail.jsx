@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Phone, CalendarDays, Package, ClipboardList, ArrowRight, Mail } from "lucide-react";
+import { Phone, CalendarDays, Package, ClipboardList, ArrowRight } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
-import { users, assets, bookings, statusLabels, statusColors } from "../data/mock";
+import { api } from "../services/apiClient";
+import { statusLabels, statusColors } from "../data/mock";
 
 const roleLabels = { tenant: "مستأجر", lessor: "مؤجر" };
 const roleColors = {
@@ -12,17 +14,15 @@ const roleColors = {
 export default function AdminUserDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const user = users.find(u => u.id === Number(id));
-  const userAssets = assets.filter(a => a.ownerName === user?.name);
-  const userBookings = bookings.filter(b => b.tenantName === user?.name);
+  const [data, setData] = useState(null);
 
-  if (!user) {
-    return (
-      <AdminLayout title="المستخدم">
-        <div className="text-center py-20 text-gray-400">المستخدم غير موجود</div>
-      </AdminLayout>
-    );
-  }
+  useEffect(() => {
+    api.get(`/admin/users/${id}`).then(setData).catch(() => setData(null));
+  }, [id]);
+
+  if (!data) return <AdminLayout title="المستخدم"><div className="text-center py-20 text-gray-400">المستخدم غير موجود</div></AdminLayout>;
+
+  const { user, bookings, assets } = data;
 
   return (
     <AdminLayout title={user.name}>
@@ -32,19 +32,18 @@ export default function AdminUserDetail() {
       </button>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* User profile */}
         <div className="space-y-4">
           <div className="bg-white rounded-xl border border-gray-200 p-5 text-center">
             <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center mx-auto mb-3">
-              <span className="text-xl font-bold text-primary">{user.name[0]}</span>
+              <span className="text-xl font-bold text-primary">{user.name?.[0]}</span>
             </div>
             <h2 className="font-bold text-gray-900">{user.name}</h2>
-            <p className="text-sm text-gray-400" dir="ltr">+966 {user.phone}</p>
+            <p className="text-sm text-gray-400" dir="ltr">{user.phone}</p>
             <span className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${roleColors[user.role]}`}>
               {roleLabels[user.role]}
             </span>
             <p className="text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
-              <CalendarDays className="w-3 h-3" /> عضو منذ {user.joinedAt}
+              <CalendarDays className="w-3 h-3" /> عضو منذ {user.created_at?.slice(0, 10)}
             </p>
           </div>
 
@@ -53,11 +52,11 @@ export default function AdminUserDetail() {
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">الأصول</span>
-                <span className="font-bold text-gray-900">{userAssets.length}</span>
+                <span className="font-bold text-gray-900">{assets?.length || 0}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">الحجوزات</span>
-                <span className="font-bold text-gray-900">{userBookings.length}</span>
+                <span className="font-bold text-gray-900">{bookings?.length || 0}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">حالة الحساب</span>
@@ -67,15 +66,14 @@ export default function AdminUserDetail() {
           </div>
         </div>
 
-        {/* Bookings & Assets */}
         <div className="lg:col-span-2 space-y-4">
-          {userBookings.length > 0 && (
+          {bookings?.length > 0 && (
             <div className="bg-white rounded-xl border border-gray-200">
               <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="font-bold text-sm text-gray-900 flex items-center gap-1.5">
                   <ClipboardList className="w-4 h-4 text-primary" /> حجوزات المستخدم
                 </h3>
-                <span className="text-xs text-gray-400">{userBookings.length} حجز</span>
+                <span className="text-xs text-gray-400">{bookings.length} حجز</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -88,11 +86,11 @@ export default function AdminUserDetail() {
                     </tr>
                   </thead>
                   <tbody>
-                    {userBookings.map(b => (
+                    {bookings.map(b => (
                       <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                        <td className="p-3 font-medium text-gray-900">{b.assetTitle}</td>
-                        <td className="p-3 text-gray-400 text-xs">{b.startDate} → {b.endDate}</td>
-                        <td className="p-3 font-semibold">{b.totalPrice} ﷼</td>
+                        <td className="p-3 font-medium text-gray-900">{b.asset_title}</td>
+                        <td className="p-3 text-gray-400 text-xs">{b.start_date} → {b.end_date}</td>
+                        <td className="p-3 font-semibold">{b.total_price} ﷼</td>
                         <td className="p-3">
                           <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${statusColors[b.status]}`}>
                             {statusLabels[b.status]}
@@ -106,13 +104,13 @@ export default function AdminUserDetail() {
             </div>
           )}
 
-          {userAssets.length > 0 && (
+          {assets?.length > 0 && (
             <div className="bg-white rounded-xl border border-gray-200">
               <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="font-bold text-sm text-gray-900 flex items-center gap-1.5">
                   <Package className="w-4 h-4 text-primary" /> أصول المستخدم
                 </h3>
-                <span className="text-xs text-gray-400">{userAssets.length} أصل</span>
+                <span className="text-xs text-gray-400">{assets.length} أصل</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -122,14 +120,13 @@ export default function AdminUserDetail() {
                       <th className="text-right p-3 font-semibold">السعر</th>
                       <th className="text-right p-3 font-semibold">المدينة</th>
                       <th className="text-right p-3 font-semibold">الحالة</th>
-                      <th className="text-center p-3 font-semibold">حجوزات</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {userAssets.map(a => (
+                    {assets.map(a => (
                       <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                         <td className="p-3 font-medium text-gray-900">{a.title}</td>
-                        <td className="p-3 font-semibold">{a.pricePerDay} ﷼</td>
+                        <td className="p-3 font-semibold">{a.price_per_day} ﷼</td>
                         <td className="p-3 text-gray-400">{a.city}</td>
                         <td className="p-3">
                           <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
@@ -140,7 +137,6 @@ export default function AdminUserDetail() {
                             {a.status === "available" ? "متاح" : a.status === "rented" ? "مؤجر" : "صيانة"}
                           </span>
                         </td>
-                        <td className="p-3 text-center text-gray-400">{a.bookingsCount}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -149,7 +145,7 @@ export default function AdminUserDetail() {
             </div>
           )}
 
-          {userBookings.length === 0 && userAssets.length === 0 && (
+          {(!bookings || bookings.length === 0) && (!assets || assets.length === 0) && (
             <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">
               لا توجد نشاطات لهذا المستخدم
             </div>

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Search, ClipboardList, CalendarDays, DollarSign, Eye, Package } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
-import { bookings, statusLabels, statusColors } from "../data/mock";
+import { api } from "../services/apiClient";
+import { statusLabels, statusColors } from "../data/mock";
 
 const filterTabs = [
   { key: "all", label: "الكل" },
@@ -13,12 +14,17 @@ const filterTabs = [
 ];
 
 export default function AdminBookings() {
+  const [allBookings, setAllBookings] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
 
-  const filtered = bookings
+  useEffect(() => { api.get("/admin/bookings").then(setAllBookings).catch(() => {}); }, []);
+
+  const filtered = allBookings
     .filter(b => activeTab === "all" || b.status === activeTab)
-    .filter(b => b.assetTitle.includes(search) || b.tenantName.includes(search));
+    .filter(b => (b.asset?.title || "").includes(search) || (b.tenant?.name || "").includes(search));
+
+  const countByStatus = (s) => allBookings.filter(b => b.status === s).length;
 
   return (
     <AdminLayout title="الطلبات">
@@ -38,7 +44,7 @@ export default function AdminBookings() {
                 }`}>
                 {tab.label}
                 {tab.key !== "all" && (
-                  <span className="mr-1.5 text-[10px] opacity-70">({bookings.filter(b => b.status === tab.key).length})</span>
+                  <span className="mr-1.5 text-[10px] opacity-70">({countByStatus(tab.key)})</span>
                 )}
               </button>
             ))}
@@ -64,11 +70,11 @@ export default function AdminBookings() {
               {filtered.map((b, idx) => (
                 <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                   <td className="p-3 text-gray-400 font-mono text-xs">{String(idx + 1).padStart(2, "0")}</td>
-                  <td className="p-3 font-medium text-gray-900">{b.assetTitle}</td>
-                  <td className="p-3 text-gray-500">{b.tenantName}</td>
-                  <td className="p-3 text-gray-400 text-xs">{b.startDate}</td>
-                  <td className="p-3 text-gray-400 text-xs">{b.endDate}</td>
-                  <td className="p-3 font-semibold text-gray-900">{b.totalPrice} ﷼</td>
+                  <td className="p-3 font-medium text-gray-900">{b.asset?.title}</td>
+                  <td className="p-3 text-gray-500">{b.tenant?.name}</td>
+                  <td className="p-3 text-gray-400 text-xs">{b.start_date}</td>
+                  <td className="p-3 text-gray-400 text-xs">{b.end_date}</td>
+                  <td className="p-3 font-semibold text-gray-900">{b.total_price} ﷼</td>
                   <td className="p-3">
                     <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[b.status]}`}>
                       {statusLabels[b.status]}

@@ -10,9 +10,8 @@ export default function Payment() {
   const navigate = useNavigate();
   const { bookings, setPaymentStatus } = useBookings();
   const { showToast } = useToast();
-  const booking = bookings.find(b => b.id === Number(id));
+  const booking = bookings.find(b => b.id === id);
   const [method, setMethod] = useState(null);
-  const [step, setStep] = useState("select");
 
   if (!booking) {
     return (
@@ -25,22 +24,26 @@ export default function Payment() {
     );
   }
 
-  const handlePay = () => {
-    setPaymentStatus(booking.id, "paid");
-    showToast("تم الدفع بنجاح! حجزك أصبح نشطاً", "success");
-    setTimeout(() => navigate("/bookings", { replace: true }), 800);
+  const handlePay = async () => {
+    try {
+      await setPaymentStatus(booking.id);
+      showToast("تم الدفع بنجاح! حجزك أصبح نشطاً", "success");
+      setTimeout(() => navigate("/bookings", { replace: true }), 800);
+    } catch (err) {
+      showToast(err.message || "فشل الدفع", "error");
+    }
   };
 
   return (
     <Layout title="إتمام الدفع" onBack={() => navigate(-1)}>
       <div className="bg-white rounded-2xl p-4 border border-gray-100/80 shadow-sm mb-4 animate-slide-up">
         <div className="flex items-center gap-3">
-          <img src={booking.assetImage} alt={booking.assetTitle}
+          <img src={booking.asset?.image_url} alt={booking.asset?.title}
             className="w-14 h-14 rounded-xl object-cover bg-gray-100 shrink-0 ring-1 ring-gray-100" />
           <div className="min-w-0">
-            <p className="font-bold text-sm text-gray-900 truncate">{booking.assetTitle}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{booking.startDate} → {booking.endDate}</p>
-            <p className="text-primary font-bold text-sm mt-1">{booking.totalPrice} ﷼</p>
+            <p className="font-bold text-sm text-gray-900 truncate">{booking.asset?.title}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{booking.start_date} → {booking.end_date}</p>
+            <p className="text-primary font-bold text-sm mt-1">{booking.total_price} ﷼</p>
           </div>
         </div>
       </div>
@@ -84,7 +87,7 @@ export default function Payment() {
             <div className="bg-gray-50 rounded-xl p-3 space-y-1 text-sm">
               <p className="text-gray-500">البنك: <span className="font-semibold text-gray-900">البنك الأهلي السعودي</span></p>
               <p className="text-gray-500">رقم الحساب: <span className="font-semibold text-gray-900" dir="ltr">SA12 3456 7890 1234 5678</span></p>
-              <p className="text-gray-500">المبلغ: <span className="font-semibold text-primary">{booking.totalPrice} ﷼</span></p>
+              <p className="text-gray-500">المبلغ: <span className="font-semibold text-primary">{booking.total_price} ﷼</span></p>
               <p className="text-gray-500">الاسم: <span className="font-semibold text-gray-900">مؤسسة عتاد للتأجير</span></p>
             </div>
             <label className="block">

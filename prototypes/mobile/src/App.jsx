@@ -15,6 +15,8 @@ import MyBookings from "./pages/MyBookings";
 import RentalHistory from "./pages/RentalHistory";
 import RateAsset from "./pages/RateAsset";
 import EditProfile from "./pages/EditProfile";
+import OnboardingLessor from "./pages/OnboardingLessor";
+import OnboardingTenant from "./pages/OnboardingTenant";
 import AddAsset from "./pages/AddAsset";
 import EditAsset from "./pages/EditAsset";
 import LessorDashboard from "./pages/LessorDashboard";
@@ -41,6 +43,8 @@ export default function App() {
         <Route path="/bookings" element={<MyBookings />} />
         <Route path="/rental-history" element={<RentalHistory />} />
         <Route path="/rate/:id" element={<RateAsset />} />
+        <Route path="/onboarding/lessor" element={<OnboardingLessor />} />
+        <Route path="/onboarding/tenant" element={<OnboardingTenant />} />
         <Route path="/edit-profile" element={<EditProfile />} />
         <Route path="/add-asset" element={<LessorRoute><AddAsset /></LessorRoute>} />
         <Route path="/edit-asset/:id" element={<LessorRoute><EditAsset /></LessorRoute>} />

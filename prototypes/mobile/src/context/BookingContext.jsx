@@ -1,67 +1,78 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import { bookings as initialBookings } from "../data/mock";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { api } from "../services/apiClient";
+import { useAuth } from "./AuthContext";
 
 const BookingContext = createContext(null);
-const STORAGE_KEY = "atad_bookings";
 
 export function BookingProvider({ children }) {
-  const [bookings, setBookings] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : initialBookings;
-  });
+  const { user } = useAuth();
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
-  }, [bookings]);
+  const fetchBookings = useCallback(async () => {
+    if (!user) { setBookings([]); return; }
+    try {
+      const data = await api.get("/bookings");
+      setBookings(Array.isArray(data) ? data : []);
+    } catch {
+      setBookings([]);
+    }
+  }, [user]);
 
-  const createBooking = ({ assetId, assetTitle, assetImage, tenantId, tenantName, startDate, endDate, totalPrice }) => {
-    const newBooking = {
-      id: Date.now(),
-      assetId, assetTitle, assetImage,
-      tenantId, tenantName,
-      startDate, endDate, totalPrice,
-      status: "pending",
-      paymentStatus: null,
-      createdAt: new Date().toISOString().slice(0, 10),
-    };
-    setBookings(prev => [newBooking, ...prev]);
-    return newBooking;
-  };
+  useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
-  const updateStatus = (bookingId, newStatus) => {
-    setBookings(prev => prev.map(b =>
-      b.id === bookingId ? { ...b, status: newStatus } : b
-    ));
-  };
+  const createBooking = useCallback(async ({ assetId, startDate, endDate }) => {
+    setLoading(true);
+    try {
+      const booking = await api.post("/bookings", { asset_id: assetId, start_date: startDate, end_date: endDate });
+      setBookings(prev => [booking, ...prev]);
+      return booking;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const setPaymentStatus = (bookingId, status) => {
-    setBookings(prev => prev.map(b =>
-      b.id === bookingId ? { ...b, paymentStatus: status, status: status === "paid" ? "active" : b.status } : b
-    ));
-  };
+  const updateStatus = useCallback(async (bookingId, newStatus) => {
+    setLoading(true);
+    try {
+      const booking = await api.patch(`/bookings/${bookingId}/status`, { status: newStatus });
+      setBookings(prev => prev.map(b => b.id === bookingId ? booking : b));
+      return booking;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const cancelBooking = (bookingId) => {
-    setBookings(prev => prev.map(b =>
-      b.id === bookingId ? { ...b, status: "rejected" } : b
-    ));
-  };
+  const setPaymentStatus = useCallback(async (bookingId) => {
+    setLoading(true);
+    try {
+      const result = await api.post("/payments", { booking_id: bookingId, method: "mock" });
+      await fetchBookings();
+      return result;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchBookings]);
 
-  const completeBooking = (bookingId) => {
-    setBookings(prev => prev.map(b =>
-      b.id === bookingId ? { ...b, status: "completed" } : b
-    ));
-  };
+  const cancelBooking = useCallback(async (bookingId) => {
+    setLoading(true);
+    try {
+      const booking = await api.post(`/bookings/${bookingId}/cancel`);
+      setBookings(prev => prev.map(b => b.id === bookingId ? booking : b));
+      return booking;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const completeBooking = useCallback(async (bookingId) => {
+    return updateStatus(bookingId, "completed");
+  }, [updateStatus]);
 
   return (
     <BookingContext.Provider value={{
-      bookings,
-      createBooking,
-      updateStatus,
-      setPaymentStatus,
-      cancelBooking,
-      completeBooking,
-      getBookingsByTenant: (tenantId) => bookings.filter(b => b.tenantId === tenantId),
-      getBookingsByAsset: (assetId) => bookings.filter(b => b.assetId === assetId),
+      bookings, loading, fetchBookings,
+      createBooking, updateStatus, setPaymentStatus, cancelBooking, completeBooking,
     }}>
       {children}
     </BookingContext.Provider>

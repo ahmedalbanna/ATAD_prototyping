@@ -12,6 +12,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/admin" element={<Dashboard />} />
+      <Route path="/admin/login" element={<Dashboard />} />
       <Route path="/admin/users" element={<Users />} />
       <Route path="/admin/user/:id" element={<AdminUserDetail />} />
       <Route path="/admin/assets" element={<AdminAssets />} />

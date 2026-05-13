@@ -1,23 +1,54 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Smartphone, ShieldCheck, ChevronLeft } from "lucide-react";
+import { ArrowRight, Smartphone, ShieldCheck, Loader, User, Building2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 const roleLabels = { tenant: "مستأجر", lessor: "مؤجر" };
+const roleIcons = { tenant: User, lessor: Building2 };
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { login, allUsers } = useAuth();
+  const { login, sendOtp, verifyOtp, loading, allUsers } = useAuth();
+  const { showToast } = useToast();
   const [mode, setMode] = useState("login");
   const [step, setStep] = useState("phone");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState("tenant");
+  const [isNewUser, setIsNewUser] = useState(false);
 
-  const handleSendOtp = (e) => { e.preventDefault(); if (phone.length >= 9) setStep("otp"); };
-  const handleVerifyOtp = (e) => { e.preventDefault(); login(phone, role, name || undefined); navigate("/home"); };
-  const handleQuickLogin = (u) => { login(u.phone, u.role); navigate("/home"); };
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    if (phone.length < 9) return;
+    try {
+      await sendOtp(phone, role);
+      setStep("otp");
+    } catch (err) {
+      showToast(err.message || "فشل إرسال رمز التحقق", "error");
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (otp.length < 4) return;
+    try {
+      await verifyOtp(phone, otp, name || undefined);
+      if (mode === "register") {
+        navigate(role === "lessor" ? "/onboarding/lessor" : "/onboarding/tenant");
+      } else {
+        navigate("/home");
+      }
+    } catch (err) {
+      showToast(err.message || "رمز التحقق غير صحيح", "error");
+    }
+  };
+
+  const handleQuickLogin = (u) => {
+    login(u.phone, u.role);
+    navigate("/home");
+  };
 
   if (step === "otp") {
     return (
@@ -38,12 +69,13 @@ export default function Auth() {
               onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
               placeholder="000000"
               className="w-full text-center text-2xl tracking-[0.5em] p-3.5 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors bg-gray-50/50" />
-            <button type="submit" disabled={otp.length < 4}
-              className="w-full bg-primary text-white font-bold py-3 rounded-xl transition-all hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed">
+            <button type="submit" disabled={otp.length < 4 || loading}
+              className="w-full bg-primary text-white font-bold py-3 btn-pill transition-all hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              {loading && <Loader className="w-4 h-4 animate-spin" />}
               تأكيد
             </button>
             <p className="text-center text-sm text-gray-400">
-              لم يصلك رمز؟ <button type="button" className="text-primary font-semibold">إعادة إرسال</button>
+              لم يصلك رمز؟ <button type="button" onClick={handleSendOtp} className="text-primary font-semibold">إعادة إرسال</button>
             </p>
           </form>
         </div>
@@ -79,19 +111,23 @@ export default function Auth() {
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            {["tenant", "lessor"].map(r => (
-              <button key={r} type="button" onClick={() => setRole(r)}
-                className={`p-3 rounded-xl border-2 text-sm font-semibold transition-colors ${
-                  role === r ? "border-primary bg-primary/5 text-primary" : "border-gray-200 text-gray-500"
-                }`}>
-                <Smartphone className={`w-4 h-4 mx-auto mb-1 ${role === r ? "text-primary" : "text-gray-400"}`} />
-                {r === "tenant" ? "مستأجر" : "مؤجر"}
-              </button>
-            ))}
+            {["tenant", "lessor"].map(r => {
+              const Icon = roleIcons[r];
+              return (
+                <button key={r} type="button" onClick={() => setRole(r)}
+                  className={`p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                    role === r ? "border-primary bg-primary/5 text-primary" : "border-gray-200 text-gray-500 hover:border-gray-300"
+                  }`}>
+                  <Icon className={`w-5 h-5 mx-auto mb-1 ${role === r ? "text-primary" : "text-gray-400"}`} />
+                  {roleLabels[r]}
+                </button>
+              );
+            })}
           </div>
 
-          <button type="submit" disabled={phone.length < 9}
-            className="w-full bg-primary text-white font-bold py-3 rounded-xl transition-all hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed">
+          <button type="submit" disabled={phone.length < 9 || loading}
+            className="w-full bg-primary text-white font-bold py-3 btn-pill transition-all hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            {loading && <Loader className="w-4 h-4 animate-spin" />}
             {mode === "login" ? "تسجيل الدخول" : "إنشاء حساب"}
           </button>
         </form>
@@ -104,18 +140,30 @@ export default function Auth() {
           </button>
         </p>
 
-        {/* Quick users */}
+        {/* Demo accounts */}
         <div className="mt-6 pt-4 border-t border-gray-100">
-          <p className="text-xs text-gray-400 mb-2 text-center">دخول سريع للمعاينة</p>
-          <div className="flex justify-center gap-2">
-            {allUsers.map(u => (
-              <button key={u.id} type="button" onClick={() => handleQuickLogin(u)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200/80 text-xs hover:border-primary/30 hover:text-primary transition-colors bg-white">
-                <span className="font-bold">{u.name}</span>
-                <span className="text-gray-300">•</span>
-                <span className="text-gray-400">{roleLabels[u.role]}</span>
-              </button>
-            ))}
+          <p className="text-xs text-gray-400 mb-3 text-center">حسابات تجريبية للمعاينة</p>
+          <div className="space-y-2">
+            {allUsers.filter(u => u.role !== "admin").map(u => {
+              const Icon = roleIcons[u.role];
+              return (
+                <button key={u.id} type="button" onClick={() => handleQuickLogin(u)}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-100/80 hover:border-primary/20 hover:bg-primary/[0.02] transition-all text-right group shadow-sm">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                    u.role === "tenant" ? "bg-blue-50" : "bg-emerald-50"
+                  } group-hover:scale-105 transition-transform`}>
+                    <Icon className={`w-5 h-5 ${u.role === "tenant" ? "text-blue-600" : "text-emerald-600"}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-gray-900">{u.name}</p>
+                    <p className="text-[11px] text-gray-400">{roleLabels[u.role]}</p>
+                  </div>
+                  <span className="text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary font-semibold shrink-0">
+                    دخول
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

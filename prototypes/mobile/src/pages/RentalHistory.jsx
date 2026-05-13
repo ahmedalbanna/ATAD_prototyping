@@ -3,18 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { Clock, Star } from "lucide-react";
 import { useBookings } from "../context/BookingContext";
 import Layout from "../components/Layout";
-import { statusLabels, statusColors, ratings } from "../data/mock";
+import { statusLabels, statusColors, ratings as mockRatings } from "../data/mock";
 
 export default function RentalHistory() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
-
   const { bookings } = useBookings();
   const history = bookings.filter(b => ["completed", "expired", "rejected"].includes(b.status));
-
   const filtered = filter === "all" ? history : history.filter(b => b.status === filter);
 
-  const getRating = (bookingId) => ratings.find(r => r.bookingId === bookingId);
+  const getRating = (bookingId) => mockRatings.find(r => r.bookingId === bookingId);
 
   return (
     <Layout title="سجل التأجير" onBack={() => navigate(-1)}>
@@ -26,9 +24,7 @@ export default function RentalHistory() {
           { key: "expired", label: "منتهي" },
         ].map(f => (
           <button key={f.key} onClick={() => setFilter(f.key)}
-            className={`px-3 py-1.5 text-xs font-medium transition-all tab-underline ${
-              filter === f.key ? "tab-active text-gray-900" : "text-gray-500"
-            }`}>
+            className={`px-3 py-1.5 text-xs font-medium transition-all tab-underline ${filter === f.key ? "tab-active text-gray-900" : "text-gray-500"}`}>
             {f.label}
           </button>
         ))}
@@ -46,13 +42,13 @@ export default function RentalHistory() {
             return (
               <div key={b.id} className="bg-white rounded-xl border border-gray-100/80 p-3 shadow-sm">
                 <div className="flex gap-2.5">
-                  <img src={b.assetImage} alt={b.assetTitle}
+                  <img src={b.asset?.image_url} alt={b.asset?.title}
                     className="w-14 h-14 rounded-lg object-cover bg-gray-100 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-gray-900 truncate">{b.assetTitle}</p>
-                    <p className="text-xs text-gray-400">{b.startDate} → {b.endDate}</p>
+                    <p className="font-bold text-sm text-gray-900 truncate">{b.asset?.title}</p>
+                    <p className="text-xs text-gray-400">{b.start_date} → {b.end_date}</p>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="font-bold text-primary text-sm">{b.totalPrice} ﷼</span>
+                      <span className="font-bold text-primary text-sm">{b.total_price} ﷼</span>
                       <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${statusColors[b.status]}`}>
                         {statusLabels[b.status]}
                       </span>
@@ -60,7 +56,6 @@ export default function RentalHistory() {
                   </div>
                 </div>
 
-                {/* Rating */}
                 {b.status === "completed" && (
                   <div className="mt-2 pt-2 border-t border-gray-50">
                     {rating ? (

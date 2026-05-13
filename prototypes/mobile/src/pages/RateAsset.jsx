@@ -1,17 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Star, Send, AlertCircle } from "lucide-react";
 import { useToast } from "../context/ToastContext";
+import { api } from "../services/apiClient";
+import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
-import { bookings } from "../data/mock";
 
 export default function RateAsset() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const booking = bookings.find(b => b.id === Number(id));
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const [booking, setBooking] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [score, setScore] = useState(0);
   const [comment, setComment] = useState("");
+
+  useEffect(() => {
+    api.get(`/bookings/${id}`).then(setBooking).catch(() => setBooking(null)).finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <Layout title="تقييم الأصل" onBack={() => navigate(-1)}><div className="shimmer rounded-2xl h-48" /></Layout>;
 
   if (!booking) {
     return (
@@ -24,20 +33,25 @@ export default function RateAsset() {
     );
   }
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    showToast("شكراً على تقييمك! تقييمك يساعد في تحسين الخدمة", "success");
-    setTimeout(() => navigate("/rental-history", { replace: true }), 800);
+    try {
+      await api.post("/ratings", { booking_id: booking.id, score, comment });
+      showToast("شكراً على تقييمك! تقييمك يساعد في تحسين الخدمة", "success");
+      setTimeout(() => navigate("/rental-history", { replace: true }), 800);
+    } catch (err) {
+      showToast(err.message || "فشل إرسال التقييم", "error");
+    }
   };
 
   return (
     <Layout title="تقييم الأصل" onBack={() => navigate(-1)}>
       <div className="flex gap-3 bg-white rounded-xl p-3 border border-gray-100/80 shadow-sm mb-6">
-        <img src={booking.assetImage} alt={booking.assetTitle}
+        <img src={booking.asset?.image_url} alt={booking.asset?.title}
           className="w-14 h-14 rounded-lg object-cover bg-gray-100 shrink-0" />
         <div>
-          <p className="font-bold text-sm text-gray-900">{booking.assetTitle}</p>
-          <p className="text-xs text-gray-400">{booking.startDate} → {booking.endDate}</p>
+          <p className="font-bold text-sm text-gray-900">{booking.asset?.title}</p>
+          <p className="text-xs text-gray-400">{booking.start_date} → {booking.end_date}</p>
         </div>
       </div>
 
@@ -62,7 +76,7 @@ export default function RateAsset() {
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1.5">تعليق (اختياري)</label>
           <textarea value={comment} onChange={e => setComment(e.target.value)}
-            placeholder={"شارك تجربتك مع هذا الأصل..."}
+            placeholder="شارك تجربتك مع هذا الأصل..."
             rows={3}
             className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:border-primary focus:outline-none transition-colors resize-none bg-gray-50/50" />
         </div>
