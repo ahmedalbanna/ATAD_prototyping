@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: oklch(0.47 0.2 32);
+  --color-primary-light: oklch(0.58 0.18 35);
+  --color-primary-dark: oklch(0.35 0.16 28);
+  --color-sidebar: oklch(0.21 0.04 260);
+  --color-sidebar-hover: oklch(0.28 0.06 260);
+}
+
+@layer base {
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
