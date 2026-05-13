@@ -1,9 +1,11 @@
+import { Link } from "react-router-dom";
 import { CalendarDays, User } from "lucide-react";
 import { statusLabels, statusColors } from "../data/mock";
 
 export default function BookingCard({ booking, actions }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100/80 overflow-hidden shadow-sm transition-all hover:shadow-md">
+    <Link to={`/booking/${booking.id}`}
+      className="block bg-white rounded-2xl border border-gray-100/80 overflow-hidden shadow-sm transition-all hover:shadow-md active:scale-[0.99]">
       <div className="flex gap-3 p-3">
         <img src={booking.assetImage} alt={booking.assetTitle}
           className="w-20 h-20 rounded-xl object-cover bg-gray-100 flex-shrink-0 ring-1 ring-gray-100" />
@@ -25,7 +27,7 @@ export default function BookingCard({ booking, actions }) {
           </div>
         </div>
       </div>
-      {actions && <div className="px-3 pb-3">{actions}</div>}
-    </div>
+      {actions && <div className="px-3 pb-3" onClick={e => e.preventDefault()}>{actions}</div>}
+    </Link>
   );
 }

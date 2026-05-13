@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ClipboardList } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import BookingCard from "../components/BookingCard";
 import { bookings, statusLabels } from "../data/mock";
@@ -13,10 +14,15 @@ const tabs = [
 ];
 
 export default function MyBookings() {
+  const { user, isLessor } = useAuth();
   const [activeTab, setActiveTab] = useState("all");
 
+  const myBookings = isLessor
+    ? bookings.filter(b => b.tenantId !== user?.id)
+    : bookings.filter(b => b.tenantId === user?.id || b.tenantId === 1);
+
   const filtered = activeTab === "all"
-    ? bookings : bookings.filter(b => b.status === activeTab);
+    ? myBookings : myBookings.filter(b => b.status === activeTab);
 
   return (
     <Layout title="طلباتي">
@@ -30,7 +36,7 @@ export default function MyBookings() {
             }`}>
             {tab.label}
             {tab.key !== "all" && (
-              <span className="mr-1.5 text-[10px] opacity-60">({bookings.filter(b => b.status === tab.key).length})</span>
+              <span className="mr-1.5 text-[10px] opacity-60">({myBookings.filter(b => b.status === tab.key).length})</span>
             )}
           </button>
         ))}

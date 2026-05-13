@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Package, ClipboardList, User, Bell, Menu, X, ArrowRight } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { notifications } from "../data/mock";
 
 const navItems = [
   { to: "/home", label: "الرئيسية", icon: Home },
@@ -9,9 +11,14 @@ const navItems = [
   { to: "/profile", label: "حسابي", icon: User },
 ];
 
+const roleLabels = { tenant: "مستأجر", lessor: "مؤجر", admin: "مدير" };
+const unreadCount = notifications.filter(n => !n.read).length;
+
 export default function Layout({ children, title, onBack }) {
   const location = useLocation();
+  const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const initial = user?.name?.[0] || "ز";
 
   return (
     <div className="min-h-screen bg-[oklch(0.98_0.005_85)] flex flex-col">
@@ -26,9 +33,13 @@ export default function Layout({ children, title, onBack }) {
           </button>
         )}
         <h1 className="text-lg font-bold text-gray-900 flex-1">{title || "عتاد"}</h1>
-        <Link to="/bookings" className="relative text-gray-400 hover:text-primary transition-colors p-1">
+        <Link to="/notifications" className="relative text-gray-400 hover:text-primary transition-colors p-1">
           <Bell className="w-5 h-5" />
-          <span className="absolute -top-0.5 -right-0.5 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-sm">2</span>
+          {unreadCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-sm">
+              {unreadCount}
+            </span>
+          )}
         </Link>
       </header>
 
@@ -39,11 +50,11 @@ export default function Layout({ children, title, onBack }) {
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-bold text-sm shadow-md">
-                  عت
+                  {initial}
                 </div>
                 <div>
-                  <p className="font-bold text-sm text-gray-900">أحمد محمد</p>
-                  <p className="text-xs text-gray-400">مستأجر</p>
+                  <p className="font-bold text-sm text-gray-900">{user?.name || "زائر"}</p>
+                  <p className="text-xs text-gray-400">{user ? roleLabels[user.role] : "زائر"}</p>
                 </div>
               </div>
               <button onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-gray-600 p-1">
@@ -66,9 +77,19 @@ export default function Layout({ children, title, onBack }) {
                   </Link>
                 );
               })}
+              <Link to="/notifications" onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
+                <Bell className="w-5 h-5 text-gray-400" />
+                الإشعارات
+                {unreadCount > 0 && (
+                  <span className="mr-auto bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">{unreadCount}</span>
+                )}
+              </Link>
             </nav>
-            <div className="pt-4 border-t border-gray-100">
-              <p className="text-xs text-gray-400">عتاد v1.0.0</p>
+            <div className="pt-4 border-t border-gray-100 space-y-1">
+              <Link to="/terms" onClick={() => setMenuOpen(false)}
+                className="block text-xs text-gray-400 hover:text-gray-600 transition-colors">الشروط والأحكام</Link>
+              <p className="text-xs text-gray-300">عتاد v1.0.0</p>
             </div>
           </div>
           <div className="flex-1 bg-black/20 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />

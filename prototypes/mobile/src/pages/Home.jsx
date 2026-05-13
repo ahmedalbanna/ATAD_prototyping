@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Package, ClipboardList, ArrowLeft } from "lucide-react";
+import { Package, ClipboardList, ArrowLeft, Bell, FileText } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import AssetCard from "../components/AssetCard";
 import { assets, categories } from "../data/mock";
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState("الكل");
 
   const filtered = activeCategory === "الكل" ? assets : assets.filter(a => a.category === activeCategory);
@@ -18,7 +20,7 @@ export default function Home() {
       <div className="relative bg-gradient-to-l from-primary via-primary-dark to-[oklch(0.3_0.14_28)] rounded-3xl p-6 text-white mb-6 shadow-xl overflow-hidden">
         <div className="absolute top-0 left-0 w-32 h-32 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-24 h-24 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3" />
-        <p className="text-white/60 text-xs font-medium mb-1 tracking-wide">أهلاً بك في</p>
+        <p className="text-white/60 text-xs font-medium mb-1 tracking-wide">أهلاً بك{user ? `، ${user.name}` : ""}</p>
         <h2 className="text-2xl font-black mb-1">عتاد</h2>
         <p className="text-white/70 text-sm mb-5 max-w-xs leading-relaxed">استأجر المعدات والأدوات التي تحتاجها بسهولة وأمان</p>
         <Link to="/assets"
@@ -81,6 +83,29 @@ export default function Home() {
             </div>
             <p className="font-bold text-sm text-gray-900">طلباتي</p>
             <p className="text-xs text-gray-400 mt-0.5">تتبع حالة الطلبات</p>
+          </button>
+        </div>
+      </div>
+
+      {/* More actions */}
+      <div className="mb-6">
+        <h3 className="font-bold text-gray-900 text-sm mb-3">المزيد</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={() => navigate("/notifications")}
+            className="group bg-white rounded-2xl p-4 border border-gray-100/80 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-200 text-right active:scale-[0.98]">
+            <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-amber-100 transition-colors">
+              <Bell className="w-5 h-5 text-amber-600" />
+            </div>
+            <p className="font-bold text-sm text-gray-900">الإشعارات</p>
+            <p className="text-xs text-gray-400 mt-0.5">آخر التحديثات</p>
+          </button>
+          <button onClick={() => navigate("/terms")}
+            className="group bg-white rounded-2xl p-4 border border-gray-100/80 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-200 text-right active:scale-[0.98]">
+            <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-purple-100 transition-colors">
+              <FileText className="w-5 h-5 text-purple-600" />
+            </div>
+            <p className="font-bold text-sm text-gray-900">الشروط</p>
+            <p className="text-xs text-gray-400 mt-0.5">سياسة الاستخدام</p>
           </button>
         </div>
       </div>

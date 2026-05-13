@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Smartphone, ShieldCheck } from "lucide-react";
+import { ArrowRight, Smartphone, ShieldCheck, Users, ChevronLeft } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+
+const roleLabels = { tenant: "مستأجر", lessor: "مؤجر" };
 
 export default function Auth() {
   const navigate = useNavigate();
+  const { login, allUsers } = useAuth();
   const [mode, setMode] = useState("login");
   const [step, setStep] = useState("phone");
   const [phone, setPhone] = useState("");
@@ -11,8 +15,21 @@ export default function Auth() {
   const [name, setName] = useState("");
   const [role, setRole] = useState("tenant");
 
-  const handleSendOtp = (e) => { e.preventDefault(); if (phone.length >= 9) setStep("otp"); };
-  const handleVerifyOtp = (e) => { e.preventDefault(); navigate("/home"); };
+  const handleSendOtp = (e) => {
+    e.preventDefault();
+    if (phone.length >= 9) setStep("otp");
+  };
+
+  const handleVerifyOtp = (e) => {
+    e.preventDefault();
+    login(phone, role, name || undefined);
+    navigate("/home");
+  };
+
+  const handleQuickLogin = (u) => {
+    login(u.phone, u.role);
+    navigate("/home");
+  };
 
   if (step === "otp") {
     return (
@@ -56,10 +73,11 @@ export default function Auth() {
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
             {mode === "login" ? "تسجيل الدخول" : "إنشاء حساب"}
           </h1>
-          <p className="text-gray-400 text-sm">أدخل رقم جوالك للبدء</p>
+          <p className="text-gray-400 text-sm">أدخل رقم جوالك واختر نوع الحساب</p>
         </div>
 
         <form onSubmit={handleSendOtp} className="space-y-4">
+          {/* Name - always shown, optional for login */}
           {mode === "register" && (
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">الاسم</label>
@@ -69,6 +87,7 @@ export default function Auth() {
             </div>
           )}
 
+          {/* Phone */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">رقم الجوال</label>
             <div className="flex gap-2">
@@ -80,35 +99,34 @@ export default function Auth() {
             </div>
           </div>
 
-          {mode === "register" && (
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">نوع الحساب</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button type="button" onClick={() => setRole("tenant")}
-                  className={`p-4 rounded-2xl border-2 text-sm font-semibold transition-all duration-200 ${
-                    role === "tenant"
-                      ? "border-primary bg-primary/5 text-primary shadow-sm"
-                      : "border-gray-200 text-gray-500 hover:border-gray-300"
-                  }`}>
-                  <Smartphone className={`w-5 h-5 mx-auto mb-1 ${role === "tenant" ? "text-primary" : "text-gray-400"}`} />
-                  مستأجر
-                </button>
-                <button type="button" onClick={() => setRole("lessor")}
-                  className={`p-4 rounded-2xl border-2 text-sm font-semibold transition-all duration-200 ${
-                    role === "lessor"
-                      ? "border-primary bg-primary/5 text-primary shadow-sm"
-                      : "border-gray-200 text-gray-500 hover:border-gray-300"
-                  }`}>
-                  <Smartphone className={`w-5 h-5 mx-auto mb-1 ${role === "lessor" ? "text-primary" : "text-gray-400"}`} />
-                  مؤجر
-                </button>
-              </div>
+          {/* Role - ALWAYS shown for both login and register */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">نوع الحساب</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button type="button" onClick={() => setRole("tenant")}
+                className={`p-4 rounded-2xl border-2 text-sm font-semibold transition-all duration-200 ${
+                  role === "tenant"
+                    ? "border-primary bg-primary/5 text-primary shadow-sm"
+                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                }`}>
+                <Smartphone className={`w-5 h-5 mx-auto mb-1 ${role === "tenant" ? "text-primary" : "text-gray-400"}`} />
+                مستأجر
+              </button>
+              <button type="button" onClick={() => setRole("lessor")}
+                className={`p-4 rounded-2xl border-2 text-sm font-semibold transition-all duration-200 ${
+                  role === "lessor"
+                    ? "border-primary bg-primary/5 text-primary shadow-sm"
+                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                }`}>
+                <Smartphone className={`w-5 h-5 mx-auto mb-1 ${role === "lessor" ? "text-primary" : "text-gray-400"}`} />
+                مؤجر
+              </button>
             </div>
-          )}
+          </div>
 
           <button type="submit" disabled={phone.length < 9}
             className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold py-3.5 rounded-2xl transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 mt-2">
-            إرسال رمز التحقق
+            {mode === "login" ? "تسجيل الدخول" : "إنشاء حساب"}
           </button>
         </form>
 
@@ -119,6 +137,32 @@ export default function Auth() {
             {mode === "login" ? "إنشاء حساب" : "تسجيل الدخول"}
           </button>
         </p>
+
+        {/* Quick user switch for testing */}
+        <div className="mt-8 pt-6 border-t border-gray-100">
+          <div className="flex items-center gap-2 mb-3">
+            <Users className="w-4 h-4 text-gray-400" />
+            <p className="text-xs font-semibold text-gray-500">دخول سريع (للمعاينة)</p>
+          </div>
+          <div className="space-y-2">
+            {allUsers.map(u => (
+              <button key={u.id} type="button" onClick={() => handleQuickLogin(u)}
+                className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-100/80 hover:border-primary/20 hover:shadow-sm transition-all text-right bg-white">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
+                  {u.name[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{u.name}</p>
+                  <p className="text-xs text-gray-400" dir="ltr">+967 {u.phone}</p>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-primary/10 text-primary flex-shrink-0">
+                  {roleLabels[u.role] || u.role}
+                </span>
+                <ChevronLeft className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

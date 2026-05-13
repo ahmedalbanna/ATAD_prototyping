@@ -1,12 +1,14 @@
-import { useNavigate } from "react-router-dom";
-import { Plus, Settings, CheckCircle, XCircle } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Plus, Settings, CheckCircle, XCircle, Edit3 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import BookingCard from "../components/BookingCard";
 import { assets, bookings } from "../data/mock";
 
 export default function LessorDashboard() {
   const navigate = useNavigate();
-  const myAssets = assets.filter(a => a.ownerId === 2);
+  const { user } = useAuth();
+  const myAssets = assets.filter(a => a.ownerId === (user?.id || 2));
   const pendingBookings = bookings.filter(b => b.status === "pending");
 
   const stats = [
@@ -74,16 +76,16 @@ export default function LessorDashboard() {
         <h3 className="font-bold text-sm text-gray-900 mb-3">أصولي</h3>
         <div className="space-y-2">
           {myAssets.map(asset => (
-            <div key={asset.id}
-              className="bg-white rounded-xl p-3 border border-gray-100/80 flex items-center gap-3 shadow-sm hover:shadow-md transition-all">
+            <Link key={asset.id} to={`/edit-asset/${asset.id}`}
+              className="bg-white rounded-xl p-3 border border-gray-100/80 flex items-center gap-3 shadow-sm hover:shadow-md transition-all group">
               <img src={asset.image} alt={asset.title}
                 className="w-12 h-12 rounded-lg object-cover bg-gray-100 flex-shrink-0 ring-1 ring-gray-100" />
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm text-gray-900 truncate">{asset.title}</p>
+                <p className="font-bold text-sm text-gray-900 truncate group-hover:text-primary transition-colors">{asset.title}</p>
                 <p className="text-xs text-gray-400">{asset.pricePerDay} ﷼/يوم • {asset.city}</p>
               </div>
-              <span className="text-[11px] px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">متاح</span>
-            </div>
+              <Edit3 className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors" />
+            </Link>
           ))}
         </div>
       </div>
