@@ -11,7 +11,7 @@ Document the existing ATAD MVP (React + Vite mobile and admin frontends) as a fo
 
 **Language/Version**: Frontend: React 18 (Vite 6), JavaScript (JSX). Backend: NEEDS CLARIFICATION — REST API language/framework not yet selected.  
 **Primary Dependencies**: Frontend: Tailwind CSS v4, React Router v6, Lucide React icons. Backend: NEEDS CLARIFICATION.  
-**Storage**: Currently localStorage (mobile) and mock data JS modules. Production target: relational database with REST API.  
+**Storage**: SQLite database (`prototypes/api/data/atad.db`) with REST API. Migrate to PostgreSQL when scaling beyond MVP.  
 **Testing**: Frontend: none currently. Constitution mandates Test-First (NON-NEGOTIABLE) for all future work. Backend: NEEDS CLARIFICATION — test framework TBD.  
 **Target Platform**: Mobile: web browser (RTL Arabic, mobile-first responsive). Admin: web browser. Backend: Linux server.  
 **Project Type**: Multi-app: mobile web app + admin web dashboard + REST API backend.  

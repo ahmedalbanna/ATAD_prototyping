@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Node.js 18+ (or 20+)
-- PostgreSQL 15+
+- Node.js 18+ (SQLite included, no separate database server needed)
 - npm or yarn
 - Docker (optional, for local PostgreSQL)
 
@@ -25,14 +25,14 @@ npm install -D nodemon vitest supertest
 
 ### 3. Environment variables
 
-Copy `.env.example` to `.env`:
+Copy `.env.example` to `.env` (already exists for development):
 
 ```env
 PORT=3001
 NODE_ENV=development
 
-# Database
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/atad
+# Database (SQLite file path — created automatically)
+DATABASE_PATH=./data/atad.db
 
 # Auth
 JWT_SECRET=your-secret-key-change-in-production
@@ -44,10 +44,9 @@ TWILIO_AUTH_TOKEN=
 TWILIO_PHONE_NUMBER=
 ```
 
-### 4. Database setup
+### 4. Database setup (SQLite — no server needed)
 
 ```bash
-createdb atad
 npm run migrate
 npm run seed
 ```

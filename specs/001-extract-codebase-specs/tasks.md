@@ -23,15 +23,15 @@
 
 **Purpose**: Project initialization, dependencies, and basic tooling
 
-- [ ] T001 Create `prototypes/api/` directory with `package.json` and project metadata
-- [ ] T002 [P] Install Express, cors, helmet, morgan, jsonwebtoken, bcrypt, dotenv, pg, uuid
-- [ ] T003 [P] Install dev dependencies: nodemon, vitest, supertest, eslint, prettier
-- [ ] T004 Create `prototypes/api/.env.example` with DATABASE_URL, JWT_SECRET, TWILIO_*, PORT vars
-- [ ] T005 Create `prototypes/api/.env` with local development defaults
-- [ ] T006 Create `prototypes/api/src/index.js` with Express app entry point
-- [ ] T007 [P] Create `prototypes/api/.eslintrc.json` with linting config
-- [ ] T008 [P] Create `prototypes/api/.prettierrc` with formatting config
-- [ ] T009 Add `dev`, `start`, `test`, `lint` scripts to `package.json`
+- [X] T001 Create `prototypes/api/` directory with `package.json` and project metadata
+- [X] T002 [P] Install Express, cors, helmet, morgan, jsonwebtoken, bcrypt, dotenv, pg, uuid
+- [X] T003 [P] Install dev dependencies: nodemon, vitest, supertest, eslint, prettier
+- [X] T004 Create `prototypes/api/.env.example` with DATABASE_URL, JWT_SECRET, TWILIO_*, PORT vars
+- [X] T005 Create `prototypes/api/.env` with local development defaults
+- [X] T006 Create `prototypes/api/src/index.js` with Express app entry point
+- [X] T007 [P] Create `prototypes/api/.eslintrc.json` with linting config
+- [X] T008 [P] Create `prototypes/api/.prettierrc` with formatting config
+- [X] T009 Add `dev`, `start`, `test`, `lint` scripts to `package.json`
 
 **Checkpoint**: Project skeleton ready — `npm run dev` starts the server
 
@@ -41,15 +41,15 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T010 Create `prototypes/api/src/config/database.js` with PostgreSQL pool connection
-- [ ] T011 Create `prototypes/api/src/middleware/errorHandler.js` with global error handling
-- [ ] T012 Create `prototypes/api/src/middleware/validate.js` with request validation helper
-- [ ] T013 Create `prototypes/api/src/middleware/auth.js` with JWT verification middleware
-- [ ] T014 Create `prototypes/api/src/middleware/logger.js` with request logging (morgan + custom)
-- [ ] T015 Create `prototypes/api/migrations/001_initial.sql` with all table schemas (users, assets, bookings, payments, ratings, notifications, transactions)
-- [ ] T016 Create `prototypes/api/migrations/run.js` with migration runner script
-- [ ] T017 Create `prototypes/api/seeds/001_demo_data.sql` with seed data matching existing mock data
-- [ ] T018 Create `prototypes/api/seeds/run.js` with seed runner script
+- [X] T010 Create `prototypes/api/src/config/database.js` with PostgreSQL pool connection
+- [X] T011 Create `prototypes/api/src/middleware/errorHandler.js` with global error handling
+- [X] T012 Create `prototypes/api/src/middleware/validate.js` with request validation helper
+- [X] T013 Create `prototypes/api/src/middleware/auth.js` with JWT verification middleware
+- [X] T014 Create `prototypes/api/src/middleware/logger.js` with request logging (morgan + custom)
+- [X] T015 Create `prototypes/api/migrations/001_initial.sql` with all table schemas (users, assets, bookings, payments, ratings, notifications, transactions)
+- [X] T016 Create `prototypes/api/migrations/run.js` with migration runner script
+- [X] T017 Create `prototypes/api/seeds/001_demo_data.sql` with seed data matching existing mock data
+- [X] T018 Create `prototypes/api/seeds/run.js` with seed runner script
 
 **Checkpoint**: Foundation ready — database schema created, auth works, requests validated
 
@@ -63,12 +63,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T019 [P] [US1] Create Asset model queries in `prototypes/api/src/models/Asset.js`
-- [ ] T020 [P] [US1] Create Category enum/constants in `prototypes/api/src/models/Category.js`
-- [ ] T021 [US1] Implement AssetService with list, search, filter, sort, getById in `prototypes/api/src/services/asset.js`
-- [ ] T022 [US1] Implement GET /api/v1/assets endpoint in `prototypes/api/src/routes/assets.js`
-- [ ] T023 [US1] Implement GET /api/v1/assets/:id endpoint in `prototypes/api/src/routes/assets.js`
-- [ ] T024 [US1] Register asset routes with auth middleware in `prototypes/api/src/index.js`
+- [X] T019 [P] [US1] Create Asset model queries in `prototypes/api/src/models/Asset.js`
+- [X] T020 [P] [US1] Create Category enum/constants in `prototypes/api/src/models/Category.js`
+- [X] T021 [US1] Implement AssetService with list, search, filter, sort, getById in `prototypes/api/src/services/asset.js`
+- [X] T022 [US1] Implement GET /api/v1/assets endpoint in `prototypes/api/src/routes/assets.js`
+- [X] T023 [US1] Implement GET /api/v1/assets/:id endpoint in `prototypes/api/src/routes/assets.js`
+- [X] T024 [US1] Register asset routes with auth middleware in `prototypes/api/src/index.js`
 
 **Checkpoint**: At this point, User Story 1 should be fully functional — assets can be listed, searched, filtered, sorted, and viewed individually
 
@@ -82,11 +82,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T025 [US2] Implement OTP generation/verification service in `prototypes/api/src/services/auth.js`
-- [ ] T026 [P] [US2] Create User model queries in `prototypes/api/src/models/User.js`
-- [ ] T027 [US2] Implement POST /api/v1/auth/send-otp in `prototypes/api/src/routes/auth.js`
-- [ ] T028 [US2] Implement POST /api/v1/auth/verify-otp in `prototypes/api/src/routes/auth.js`
-- [ ] T029 [US2] Register auth routes in `prototypes/api/src/index.js`
+- [X] T025 [US2] Implement OTP generation/verification service in `prototypes/api/src/services/auth.js`
+- [X] T026 [P] [US2] Create User model queries in `prototypes/api/src/models/User.js`
+- [X] T027 [US2] Implement POST /api/v1/auth/send-otp in `prototypes/api/src/routes/auth.js`
+- [X] T028 [US2] Implement POST /api/v1/auth/verify-otp in `prototypes/api/src/routes/auth.js`
+- [X] T029 [US2] Register auth routes in `prototypes/api/src/index.js`
 
 **Checkpoint**: At this point, user authentication works — register, login, and JWT-based session management
 
@@ -100,13 +100,13 @@
 
 ### Implementation for User Story 3
 
-- [ ] T030 [P] [US3] Create Booking model queries in `prototypes/api/src/models/Booking.js`
-- [ ] T031 [US3] Implement BookingService with create, list, getById, cancel in `prototypes/api/src/services/booking.js`
-- [ ] T032 [US3] Implement POST /api/v1/bookings in `prototypes/api/src/routes/bookings.js`
-- [ ] T033 [US3] Implement GET /api/v1/bookings in `prototypes/api/src/routes/bookings.js`
-- [ ] T034 [US3] Implement GET /api/v1/bookings/:id in `prototypes/api/src/routes/bookings.js`
-- [ ] T035 [US3] Implement booking overlap validation in `prototypes/api/src/services/booking.js` (prevent double-booking)
-- [ ] T036 [US3] Register booking routes in `prototypes/api/src/index.js`
+- [X] T030 [P] [US3] Create Booking model queries in `prototypes/api/src/models/Booking.js`
+- [X] T031 [US3] Implement BookingService with create, list, getById, cancel in `prototypes/api/src/services/booking.js`
+- [X] T032 [US3] Implement POST /api/v1/bookings in `prototypes/api/src/routes/bookings.js`
+- [X] T033 [US3] Implement GET /api/v1/bookings in `prototypes/api/src/routes/bookings.js`
+- [X] T034 [US3] Implement GET /api/v1/bookings/:id in `prototypes/api/src/routes/bookings.js`
+- [X] T035 [US3] Implement booking overlap validation in `prototypes/api/src/services/booking.js` (prevent double-booking)
+- [X] T036 [US3] Register booking routes in `prototypes/api/src/index.js`
 
 **Checkpoint**: Booking CRUD works — create, list, view, cancel with proper validation
 
@@ -120,12 +120,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T037 [P] [US4] Implement PATCH /api/v1/bookings/:id/status (approve/reject) in `prototypes/api/src/routes/bookings.js`
-- [ ] T038 [US4] Add state machine enforcement in `prototypes/api/src/services/booking.js` (valid transitions per role)
-- [ ] T039 [US4] Implement PATCH /api/v1/assets/:id/status in `prototypes/api/src/routes/assets.js` (lessor toggle)
-- [ ] T040 [US4] Implement GET /api/v1/assets with owner_id filter in `prototypes/api/src/routes/assets.js` (lessor dashboard)
-- [ ] T041 [P] [US4] Create Transaction model queries in `prototypes/api/src/models/Transaction.js`
-- [ ] T042 [US4] Implement transaction generation on payment in `prototypes/api/src/services/transaction.js`
+- [X] T037 [P] [US4] Implement PATCH /api/v1/bookings/:id/status (approve/reject) in `prototypes/api/src/routes/bookings.js`
+- [X] T038 [US4] Add state machine enforcement in `prototypes/api/src/services/booking.js` (valid transitions per role)
+- [X] T039 [US4] Implement PATCH /api/v1/assets/:id/status in `prototypes/api/src/routes/assets.js` (lessor toggle)
+- [X] T040 [US4] Implement GET /api/v1/assets with owner_id filter in `prototypes/api/src/routes/assets.js` (lessor dashboard)
+- [X] T041 [P] [US4] Create Transaction model queries in `prototypes/api/src/models/Transaction.js`
+- [X] T042 [US4] Implement transaction generation on payment in `prototypes/api/src/services/transaction.js`
 
 **Checkpoint**: Lessor operations work — accept, reject, complete, toggle asset status, view earnings
 
@@ -139,11 +139,11 @@
 
 ### Implementation for User Story 5
 
-- [ ] T043 [P] [US5] Create Payment model queries in `prototypes/api/src/models/Payment.js`
-- [ ] T044 [US5] Implement PaymentService with processPayment (mock + bank) in `prototypes/api/src/services/payment.js`
-- [ ] T045 [US5] Implement POST /api/v1/payments in `prototypes/api/src/routes/payments.js`
-- [ ] T046 [US5] Register payment routes in `prototypes/api/src/index.js`
-- [ ] T047 [US5] Integrate payment → booking status transition (approved → active) in `prototypes/api/src/services/payment.js`
+- [X] T043 [P] [US5] Create Payment model queries in `prototypes/api/src/models/Payment.js`
+- [X] T044 [US5] Implement PaymentService with processPayment (mock + bank) in `prototypes/api/src/services/payment.js`
+- [X] T045 [US5] Implement POST /api/v1/payments in `prototypes/api/src/routes/payments.js`
+- [X] T046 [US5] Register payment routes in `prototypes/api/src/index.js`
+- [X] T047 [US5] Integrate payment → booking status transition (approved → active) in `prototypes/api/src/services/payment.js`
 
 **Checkpoint**: Payment flow works — mock payment instantly activates booking, bank transfer records pending payment
 
@@ -157,11 +157,11 @@
 
 ### Implementation for User Story 6
 
-- [ ] T048 [P] [US6] Create Rating model queries in `prototypes/api/src/models/Rating.js`
-- [ ] T049 [US6] Implement RatingService with createRating in `prototypes/api/src/services/rating.js`
-- [ ] T050 [US6] Implement POST /api/v1/ratings in `prototypes/api/src/routes/ratings.js`
-- [ ] T051 [US6] Register rating routes in `prototypes/api/src/index.js`
-- [ ] T052 [US6] Update Asset model to compute average rating from ratings table
+- [X] T048 [P] [US6] Create Rating model queries in `prototypes/api/src/models/Rating.js`
+- [X] T049 [US6] Implement RatingService with createRating in `prototypes/api/src/services/rating.js`
+- [X] T050 [US6] Implement POST /api/v1/ratings in `prototypes/api/src/routes/ratings.js`
+- [X] T051 [US6] Register rating routes in `prototypes/api/src/index.js`
+- [X] T052 [US6] Update Asset model to compute average rating from ratings table
 
 **Checkpoint**: Rating system works — tenants can rate completed bookings, asset rating updates
 
@@ -175,14 +175,14 @@
 
 ### Implementation for User Story 7
 
-- [ ] T053 [US7] Create Notification model queries in `prototypes/api/src/models/Notification.js`
-- [ ] T054 [P] [US7] Implement GET /api/v1/admin/stats in `prototypes/api/src/routes/admin.js`
-- [ ] T055 [P] [US7] Implement GET /api/v1/admin/users and GET /api/v1/admin/users/:id in `prototypes/api/src/routes/admin.js`
-- [ ] T056 [P] [US7] Implement GET /api/v1/admin/assets and GET /api/v1/admin/assets/:id in `prototypes/api/src/routes/admin.js`
-- [ ] T057 [US7] Implement GET /api/v1/admin/bookings and GET /api/v1/admin/bookings/:id in `prototypes/api/src/routes/admin.js`
-- [ ] T058 [US7] Implement GET /api/v1/admin/revenue in `prototypes/api/src/routes/admin.js`
-- [ ] T059 [US7] Implement GET /api/v1/admin/notifications and PATCH mark-read in `prototypes/api/src/routes/admin.js`
-- [ ] T060 [US7] Register admin routes with admin-only middleware in `prototypes/api/src/index.js`
+- [X] T053 [US7] Create Notification model queries in `prototypes/api/src/models/Notification.js`
+- [X] T054 [P] [US7] Implement GET /api/v1/admin/stats in `prototypes/api/src/routes/admin.js`
+- [X] T055 [P] [US7] Implement GET /api/v1/admin/users and GET /api/v1/admin/users/:id in `prototypes/api/src/routes/admin.js`
+- [X] T056 [P] [US7] Implement GET /api/v1/admin/assets and GET /api/v1/admin/assets/:id in `prototypes/api/src/routes/admin.js`
+- [X] T057 [US7] Implement GET /api/v1/admin/bookings and GET /api/v1/admin/bookings/:id in `prototypes/api/src/routes/admin.js`
+- [X] T058 [US7] Implement GET /api/v1/admin/revenue in `prototypes/api/src/routes/admin.js`
+- [X] T059 [US7] Implement GET /api/v1/admin/notifications and PATCH mark-read in `prototypes/api/src/routes/admin.js`
+- [X] T060 [US7] Register admin routes with admin-only middleware in `prototypes/api/src/index.js`
 
 **Checkpoint**: Admin panel endpoints serve all statistics, user/asset/booking management, and revenue reporting
 
@@ -216,13 +216,13 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T072 Create `prototypes/api/README.md` with setup and usage instructions
-- [ ] T073 [P] Add comprehensive error messages in Arabic where user-facing
-- [ ] T074 Add rate limiting middleware in `prototypes/api/src/middleware/rateLimiter.js`
-- [ ] T075 Add CORS configuration for mobile and admin origins
-- [ ] T076 Add health check endpoint GET /api/v1/health
-- [ ] T077 Run full contract validation against all endpoints
-- [ ] T078 Update `AGENTS.md` to reflect backend API architecture
+- [X] T072 Create `prototypes/api/README.md` with setup and usage instructions
+- [X] T073 [P] Add comprehensive error messages in Arabic where user-facing
+- [X] T074 Add rate limiting middleware in `prototypes/api/src/middleware/rateLimiter.js`
+- [X] T075 Add CORS configuration for mobile and admin origins
+- [X] T076 Add health check endpoint GET /api/v1/health
+- [X] T077 Run full contract validation against all endpoints
+- [X] T078 Update `AGENTS.md` to reflect backend API architecture
 
 ---
 

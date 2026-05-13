@@ -15,13 +15,13 @@
 
 ### 2. Database
 
-**Decision**: PostgreSQL
+**Decision**: SQLite
 
-**Rationale**: Relational database per constitution requirement. PostgreSQL has excellent JSON support (useful for flexible asset metadata), robust transaction support for booking state management, and strong Arabic/Unicode support.
+**Rationale**: Zero-configuration, file-based database eliminates the need for a separate database server during development and deployment. SQLite provides sufficient performance for MVP-scale workloads (< 100 concurrent users, < 1k assets). All necessary features (transactions, foreign keys, CHECK constraints, indexes) are supported. Reduces deployment complexity significantly — no PostgreSQL server to manage. Easy to migrate to PostgreSQL later if scaling requires it.
 
 **Alternatives considered**:
-- MySQL: Similar capabilities but weaker JSON and CTE support
-- SQLite: Good for development but unsuitable for production multi-user workloads
+- PostgreSQL: Full-featured but requires server setup and maintenance; overkill for MVP stage
+- MySQL: Similar overhead to PostgreSQL without significant benefits for this use case
 
 ### 3. API Style
 
