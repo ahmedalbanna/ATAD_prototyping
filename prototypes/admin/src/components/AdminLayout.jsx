@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Package, ClipboardList, Menu, X, ChevronLeft } from "lucide-react";
+import { LayoutDashboard, Users, Package, ClipboardList, Wallet, Menu, X, ChevronLeft } from "lucide-react";
+import Logo from "./Logo";
 
 const navItems = [
   { to: "/admin", label: "لوحة التحكم", icon: LayoutDashboard },
   { to: "/admin/users", label: "المستخدمين", icon: Users },
   { to: "/admin/assets", label: "الأصول", icon: Package },
   { to: "/admin/bookings", label: "الطلبات", icon: ClipboardList },
+  { to: "/admin/revenue", label: "الإيرادات", icon: Wallet },
 ];
 
 export default function AdminLayout({ children, title }) {
@@ -14,21 +16,19 @@ export default function AdminLayout({ children, title }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[oklch(0.97_0.005_85)] flex">
+    <div className="min-h-screen bg-[#FDFDFC] flex">
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 right-0 z-40 w-64 bg-sidebar text-white transform transition-all duration-300 lg:static lg:translate-x-0 ${
         sidebarOpen ? "translate-x-0 shadow-2xl" : "translate-x-full lg:translate-x-0"
       }`}>
-        <div className="p-5 border-b border-white/10">
+        <div className="p-4 border-b border-white/10">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-black tracking-tight">عتاد</h1>
-              <p className="text-white/40 text-xs mt-0.5">لوحة التحكم</p>
-            </div>
+            <Logo className="w-28" />
             <button onClick={() => setSidebarOpen(false)} className="text-white/50 hover:text-white lg:hidden">
               <X className="w-5 h-5" />
             </button>
           </div>
+          <p className="text-white/40 text-xs mt-1">لوحة التحكم</p>
         </div>
 
         <nav className="p-3 space-y-1">

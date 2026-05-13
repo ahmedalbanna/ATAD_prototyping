@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { ClipboardList } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useBookings } from "../context/BookingContext";
 import Layout from "../components/Layout";
 import BookingCard from "../components/BookingCard";
-import { bookings, statusLabels } from "../data/mock";
 
 const tabs = [
   { key: "all", label: "الكل" },
@@ -15,10 +15,11 @@ const tabs = [
 
 export default function MyBookings() {
   const { user, isLessor } = useAuth();
+  const { bookings } = useBookings();
   const [activeTab, setActiveTab] = useState("all");
 
   const myBookings = isLessor
-    ? bookings.filter(b => b.tenantId !== user?.id)
+    ? bookings
     : bookings.filter(b => b.tenantId === user?.id || b.tenantId === 1);
 
   const filtered = activeTab === "all"
@@ -29,10 +30,8 @@ export default function MyBookings() {
       <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-4 pb-1">
         {tabs.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-              activeTab === tab.key
-                ? "bg-primary text-white shadow-sm"
-                : "bg-white text-gray-500 border border-gray-200/80 hover:border-gray-300"
+            className={`whitespace-nowrap px-3 py-1.5 text-xs font-medium transition-all tab-underline ${
+              activeTab === tab.key ? "tab-active text-gray-900" : "text-gray-500"
             }`}>
             {tab.label}
             {tab.key !== "all" && (
@@ -43,9 +42,9 @@ export default function MyBookings() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-20 text-gray-300">
-          <ClipboardList className="w-16 h-16 mx-auto mb-3 opacity-50" />
-          <p className="font-medium text-gray-400">لا توجد طلبات</p>
+        <div className="flex flex-col items-center justify-center py-20 text-gray-300">
+          <ClipboardList className="w-12 h-12 mb-3 opacity-40" />
+          <p className="font-medium text-gray-400 text-sm">لا توجد طلبات</p>
           <p className="text-xs text-gray-300 mt-1">ستظهر طلبات التأجير هنا</p>
         </div>
       ) : (

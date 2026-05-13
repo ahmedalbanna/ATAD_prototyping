@@ -22,10 +22,7 @@ export function AuthProvider({ children }) {
     return u;
   };
 
-  const switchUser = (targetUser) => {
-    setUser(targetUser);
-  };
-
+  const switchUser = (targetUser) => setUser(targetUser);
   const logout = () => setUser(null);
 
   return (
@@ -33,7 +30,6 @@ export function AuthProvider({ children }) {
       user, login, logout, switchUser,
       isLessor: user?.role === "lessor",
       isTenant: user?.role === "tenant",
-      isAdmin: user?.role === "admin",
       allUsers: users,
     }}>
       {children}

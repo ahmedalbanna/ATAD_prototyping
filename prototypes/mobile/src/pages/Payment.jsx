@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CreditCard, Banknote, CheckCircle, AlertCircle, Upload, ArrowRight } from "lucide-react";
+import { useBookings } from "../context/BookingContext";
+import { useToast } from "../context/ToastContext";
 import Layout from "../components/Layout";
-import { bookings } from "../data/mock";
 
 export default function Payment() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { bookings, setPaymentStatus } = useBookings();
+  const { showToast } = useToast();
   const booking = bookings.find(b => b.id === Number(id));
   const [method, setMethod] = useState(null);
   const [step, setStep] = useState("select");
-  const [receipt, setReceipt] = useState(null);
 
   if (!booking) {
     return (
@@ -24,31 +26,17 @@ export default function Payment() {
   }
 
   const handlePay = () => {
-    setStep("success");
-    setTimeout(() => navigate("/bookings", { replace: true }), 2500);
+    setPaymentStatus(booking.id, "paid");
+    showToast("تم الدفع بنجاح! حجزك أصبح نشطاً", "success");
+    setTimeout(() => navigate("/bookings", { replace: true }), 800);
   };
-
-  if (step === "success") {
-    return (
-      <Layout title="الدفع" onBack={() => navigate(-1)}>
-        <div className="flex-1 flex flex-col items-center justify-center text-center py-20">
-          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
-            <CheckCircle className="w-10 h-10 text-emerald-600" />
-          </div>
-          <h2 className="text-xl font-black text-gray-900 mb-2">تم الدفع بنجاح!</h2>
-          <p className="text-gray-400 text-sm">سيتم تحويلك إلى قائمة الطلبات...</p>
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout title="إتمام الدفع" onBack={() => navigate(-1)}>
-      {/* Booking summary */}
-      <div className="bg-white rounded-2xl p-4 border border-gray-100/80 shadow-sm mb-4">
+      <div className="bg-white rounded-2xl p-4 border border-gray-100/80 shadow-sm mb-4 animate-slide-up">
         <div className="flex items-center gap-3">
           <img src={booking.assetImage} alt={booking.assetTitle}
-            className="w-14 h-14 rounded-xl object-cover bg-gray-100 flex-shrink-0 ring-1 ring-gray-100" />
+            className="w-14 h-14 rounded-xl object-cover bg-gray-100 shrink-0 ring-1 ring-gray-100" />
           <div className="min-w-0">
             <p className="font-bold text-sm text-gray-900 truncate">{booking.assetTitle}</p>
             <p className="text-xs text-gray-400 mt-0.5">{booking.startDate} → {booking.endDate}</p>
@@ -57,66 +45,47 @@ export default function Payment() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {/* Mock payment */}
+      <div className="space-y-4 animate-slide-up stagger-1">
         <button onClick={() => setMethod("mock")}
           className={`w-full bg-white rounded-2xl p-4 border-2 text-right transition-all ${
             method === "mock" ? "border-primary bg-primary/[0.03]" : "border-gray-100/80 hover:border-gray-200"
           }`}>
           <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-              method === "mock" ? "bg-primary/10" : "bg-gray-50"
-            }`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${method === "mock" ? "bg-primary/10" : "bg-gray-50"}`}>
               <CreditCard className={`w-5 h-5 ${method === "mock" ? "text-primary" : "text-gray-400"}`} />
             </div>
-            <div>
-              <p className="font-bold text-sm text-gray-900">دفع تجريبي (Mock)</p>
+            <div className="flex-1">
+              <p className="font-bold text-sm text-gray-900">دفع تجريبي</p>
               <p className="text-xs text-gray-400">محاكاة عملية دفع - للمعاينة فقط</p>
             </div>
-            {method === "mock" && (
-              <div className="mr-auto">
-                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-3.5 h-3.5 text-white" />
-                </div>
-              </div>
-            )}
+            {method === "mock" && <CheckCircle className="w-5 h-5 text-primary" />}
           </div>
         </button>
 
-        {/* Bank transfer */}
         <button onClick={() => setMethod("bank")}
           className={`w-full bg-white rounded-2xl p-4 border-2 text-right transition-all ${
             method === "bank" ? "border-primary bg-primary/[0.03]" : "border-gray-100/80 hover:border-gray-200"
           }`}>
           <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-              method === "bank" ? "bg-primary/10" : "bg-gray-50"
-            }`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${method === "bank" ? "bg-primary/10" : "bg-gray-50"}`}>
               <Banknote className={`w-5 h-5 ${method === "bank" ? "text-primary" : "text-gray-400"}`} />
             </div>
-            <div>
+            <div className="flex-1">
               <p className="font-bold text-sm text-gray-900">تحويل بنكي</p>
               <p className="text-xs text-gray-400">حول المبلغ وارفع إيصال الدفع</p>
             </div>
-            {method === "bank" && (
-              <div className="mr-auto">
-                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-3.5 h-3.5 text-white" />
-                </div>
-              </div>
-            )}
+            {method === "bank" && <CheckCircle className="w-5 h-5 text-primary" />}
           </div>
         </button>
 
-        {/* Bank details */}
         {method === "bank" && (
           <div className="bg-white rounded-2xl p-4 border border-gray-100/80 shadow-sm space-y-2">
             <h4 className="font-bold text-sm text-gray-900">بيانات الحساب البنكي</h4>
             <div className="bg-gray-50 rounded-xl p-3 space-y-1 text-sm">
-              <p className="text-gray-500">البنك: <span className="font-semibold text-gray-900">البنك التجاري</span></p>
-              <p className="text-gray-500">رقم الحساب: <span className="font-semibold text-gray-900" dir="ltr">YE12 3456 7890 1234 5678</span></p>
+              <p className="text-gray-500">البنك: <span className="font-semibold text-gray-900">البنك الأهلي السعودي</span></p>
+              <p className="text-gray-500">رقم الحساب: <span className="font-semibold text-gray-900" dir="ltr">SA12 3456 7890 1234 5678</span></p>
               <p className="text-gray-500">المبلغ: <span className="font-semibold text-primary">{booking.totalPrice} ﷼</span></p>
-              <p className="text-gray-500">الاسم: <span className="font-semibold text-gray-900">شركة عتاد للتأجير</span></p>
+              <p className="text-gray-500">الاسم: <span className="font-semibold text-gray-900">مؤسسة عتاد للتأجير</span></p>
             </div>
             <label className="block">
               <span className="text-xs font-semibold text-gray-600 mb-1.5 block">ارفع إيصال الدفع</span>
@@ -129,14 +98,10 @@ export default function Payment() {
         )}
 
         <button onClick={handlePay} disabled={!method}
-          className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold py-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2">
-          {method === "mock" ? (
-            <>تأكيد الدفع التجريبي <ArrowRight className="w-4 h-4" /></>
-          ) : method === "bank" ? (
-            <>إرسال الإيصال للمراجعة <ArrowRight className="w-4 h-4" /></>
-          ) : (
-            <>اختر طريقة الدفع</>
-          )}
+          className="w-full bg-primary text-white font-bold py-4 btn-pill transition-all hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2">
+          {method === "mock" ? <>تأكيد الدفع <ArrowRight className="w-4 h-4" /></>
+            : method === "bank" ? <>إرسال الإيصال للمراجعة <ArrowRight className="w-4 h-4" /></>
+            : "اختر طريقة الدفع"}
         </button>
       </div>
     </Layout>

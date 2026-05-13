@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Search, Users as UsersIcon, Phone, Calendar, Activity } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import { users } from "../data/mock";
@@ -61,7 +62,11 @@ export default function Users() {
               {filtered.map((user, idx) => (
                 <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                   <td className="p-3 text-gray-400 font-mono text-xs">{String(idx + 1).padStart(2, "0")}</td>
-                  <td className="p-3 font-medium text-gray-900">{user.name}</td>
+                  <td className="p-3">
+                    <Link to={`/admin/user/${user.id}`} className="font-medium text-gray-900 hover:text-primary transition-colors">
+                      {user.name}
+                    </Link>
+                  </td>
                   <td className="p-3 text-gray-500" dir="ltr">+967 {user.phone}</td>
                   <td className="p-3">
                     <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${roleColors[user.role]}`}>

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, CheckCheck, ChevronLeft } from "lucide-react";
+import { Bell, CheckCheck, ChevronLeft, ClipboardList, Wallet, Settings } from "lucide-react";
 import Layout from "../components/Layout";
 import { notifications } from "../data/mock";
 
 const typeIcons = {
-  booking_status: "📋",
-  payment: "💰",
-  system: "⚙️",
+  booking_status: ClipboardList,
+  payment: Wallet,
+  system: Settings,
 };
 
 export default function Notifications() {
@@ -35,28 +35,42 @@ export default function Notifications() {
 
       {/* List */}
       {list.length === 0 ? (
-        <div className="text-center py-20 text-gray-300">
-          <Bell className="w-16 h-16 mx-auto mb-3 opacity-50" />
+        <div className="flex flex-col items-center justify-center py-20 text-gray-300 animate-scale-in">
+          <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center mb-4">
+            <Bell className="w-8 h-8 opacity-40" />
+          </div>
           <p className="font-medium text-gray-400">لا توجد إشعارات</p>
+          <p className="text-xs text-gray-300 mt-1">سيتم إعلامك عند وجود مستجدات</p>
         </div>
       ) : (
         <div className="space-y-2">
-          {list.map(n => (
+          {list.map((n, i) => (
             <div key={n.id}
-              className={`bg-white rounded-2xl p-4 border transition-all cursor-pointer hover:shadow-sm ${
-                n.read ? "border-gray-100/80" : "border-primary/20 bg-primary/[0.02]"
-              }`}>
+              className={`bg-white rounded-2xl p-4 border transition-all duration-300 cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] animate-slide-up ${
+                n.read ? "border-gray-100/80" : "border-primary/20 bg-gradient-to-r from-primary/[0.02] to-transparent"
+              }`}
+              style={{ animationDelay: `${i * 0.05}s` }}>
               <div className="flex gap-3">
-                <span className="text-xl mt-0.5">{typeIcons[n.type]}</span>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  n.type === "booking_status" ? "bg-blue-50" :
+                  n.type === "payment" ? "bg-emerald-50" : "bg-gray-50"
+                }`}>
+                  {(() => { const Icon = typeIcons[n.type]; return <Icon className="w-5 h-5" />; })()}
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <p className={`text-sm ${n.read ? "text-gray-900" : "text-gray-900 font-bold"}`}>
                       {n.title}
                     </p>
-                    {!n.read && <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1.5" />}
+                    {!n.read && (
+                      <span className="w-2 h-2 bg-primary rounded-full shrink-0 mt-1.5 animate-pulse-soft" />
+                    )}
                   </div>
                   <p className="text-xs text-gray-400 mt-1 leading-relaxed">{n.message}</p>
-                  <p className="text-[10px] text-gray-300 mt-2">{n.createdAt.slice(0, 10)}</p>
+                  <p className="text-[10px] text-gray-300 mt-2 flex items-center gap-1">
+                    <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                    {n.createdAt.slice(0, 10)}
+                  </p>
                 </div>
               </div>
             </div>

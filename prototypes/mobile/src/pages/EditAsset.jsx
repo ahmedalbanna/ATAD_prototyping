@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ImagePlus, Tag, FileText, MapPin, ListTree, Save, AlertCircle } from "lucide-react";
 import Layout from "../components/Layout";
@@ -16,9 +16,24 @@ export default function EditAsset() {
     city: asset?.city || "",
     category: asset?.category || categories[1],
   });
+  const [errors, setErrors] = useState({});
+  const fileRef = useRef(null);
+  const [preview, setPreview] = useState(null);
 
-  const update = (f, v) => setForm(p => ({ ...p, [f]: v }));
-  const handleSubmit = (e) => { e.preventDefault(); navigate("/lessor-dashboard"); };
+  const update = (f, v) => {
+    setForm(p => ({ ...p, [f]: v }));
+    if (errors[f]) setErrors(p => { const n = { ...p }; delete n[f]; return n; });
+  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const errs = {};
+    if (!form.title.trim()) errs.title = "يرجى إدخال عنوان الأصل";
+    if (!form.description.trim()) errs.description = "يرجى إدخال وصف الأصل";
+    if (!form.pricePerDay || Number(form.pricePerDay) <= 0) errs.pricePerDay = "يرجى إدخال سعر صحيح";
+    if (!form.city.trim()) errs.city = "يرجى اختيار المدينة";
+    setErrors(errs);
+    if (Object.keys(errs).length === 0) navigate("/lessor-dashboard");
+  };
 
   const assetStatuses = [
     { value: "available", label: "متاح" },
@@ -43,12 +58,24 @@ export default function EditAsset() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Image */}
         <div className="bg-white rounded-2xl border border-gray-100/80 overflow-hidden shadow-sm">
-          <img src={asset.image} alt={asset.title}
+          <img src={preview || asset.image} alt={asset.title}
             className="w-full aspect-[16/9] object-cover bg-gray-100" />
           <div className="p-4 border-t border-gray-100">
-            <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center text-gray-400 cursor-pointer hover:border-primary/40 transition-all group">
+            <input type="file" accept="image/*" ref={fileRef} className="hidden"
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = ev => setPreview(ev.target.result);
+                  reader.readAsDataURL(file);
+                }
+              }} />
+            <div onClick={() => fileRef.current?.click()}
+              className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all group ${
+                preview ? "border-primary/40 bg-primary/[0.02]" : "border-gray-200 hover:border-primary/40"
+              }`}>
               <ImagePlus className="w-6 h-6 mx-auto mb-1 group-hover:text-primary transition-colors" />
-              <p className="text-xs">تغيير الصورة</p>
+              <p className="text-xs">{preview ? "تغيير الصورة" : "تغيير الصورة"}</p>
             </div>
           </div>
         </div>
@@ -60,7 +87,10 @@ export default function EditAsset() {
               <Tag className="w-3.5 h-3.5 text-primary" /> عنوان الأصل
             </label>
             <input type="text" value={form.title} onChange={e => update("title", e.target.value)}
-              className="w-full p-3 border border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-all bg-gray-50/50 text-sm" />
+              className={`w-full p-3 border rounded-xl focus:outline-none transition-all text-sm ${
+                errors.title ? "border-red-300 bg-red-50/50 focus:border-red-400" : "border-gray-200 bg-gray-50/50 focus:border-primary"
+              }`} />
+            {errors.title && <p className="text-xs text-red-500 mt-1.5">{errors.title}</p>}
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1.5 flex items-center gap-1.5">
@@ -68,21 +98,30 @@ export default function EditAsset() {
             </label>
             <textarea value={form.description} onChange={e => update("description", e.target.value)}
               rows={3}
-              className="w-full p-3 border border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-all bg-gray-50/50 text-sm resize-none" />
+              className={`w-full p-3 border rounded-xl focus:outline-none transition-all text-sm resize-none ${
+                errors.description ? "border-red-300 bg-red-50/50 focus:border-red-400" : "border-gray-200 bg-gray-50/50 focus:border-primary"
+              }`} />
+            {errors.description && <p className="text-xs text-red-500 mt-1.5">{errors.description}</p>}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">السعر / اليوم</label>
               <input type="number" value={form.pricePerDay} onChange={e => update("pricePerDay", e.target.value)}
                 min={0}
-                className="w-full p-3 border border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-all bg-gray-50/50 text-sm" />
+                className={`w-full p-3 border rounded-xl focus:outline-none transition-all text-sm ${
+                  errors.pricePerDay ? "border-red-300 bg-red-50/50 focus:border-red-400" : "border-gray-200 bg-gray-50/50 focus:border-primary"
+                }`} />
+              {errors.pricePerDay && <p className="text-xs text-red-500 mt-1.5">{errors.pricePerDay}</p>}
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-primary" /> المدينة
               </label>
               <input type="text" value={form.city} onChange={e => update("city", e.target.value)}
-                className="w-full p-3 border border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-all bg-gray-50/50 text-sm" />
+                className={`w-full p-3 border rounded-xl focus:outline-none transition-all text-sm ${
+                  errors.city ? "border-red-300 bg-red-50/50 focus:border-red-400" : "border-gray-200 bg-gray-50/50 focus:border-primary"
+                }`} />
+              {errors.city && <p className="text-xs text-red-500 mt-1.5">{errors.city}</p>}
             </div>
           </div>
           <div>
@@ -113,6 +152,9 @@ export default function EditAsset() {
           </div>
         </div>
 
+        {Object.keys(errors).length > 0 && (
+          <p className="text-xs text-red-500 text-center">يرجى تصحيح الحقول المظللة باللون الأحمر</p>
+        )}
         <button type="submit"
           className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold py-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 active:scale-[0.98] flex items-center justify-center gap-2">
           <Save className="w-5 h-5" />

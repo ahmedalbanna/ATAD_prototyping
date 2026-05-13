@@ -1,26 +1,24 @@
 export const users = [
-  { id: 1, name: "أحمد محمد", phone: "777123456", role: "tenant" },
-  { id: 2, name: "سارة علي", phone: "777654321", role: "lessor" },
-  { id: 3, name: "خالد المدير", phone: "777000000", role: "admin" },
+  { id: 1, name: "أحمد الحربي", phone: "555123456", role: "tenant" },
+  { id: 2, name: "سارة القحطاني", phone: "555654321", role: "lessor" },
 ];
 
 export const categories = [
   "الكل", "معدات ثقيلة", "مركبات", "معدات كهربائية", "معدات بناء", "معدات صناعية", "أدوات يدوية"
 ];
 
+const img = (id, text) => `https://images.unsplash.com/photo-${id}?w=400&h=300&fit=crop&auto=format`;
+
 export const assets = [
-  { id: 1, ownerId: 2, ownerName: "سارة علي", title: "حفار صغير", description: "حفار صغير للإيجار بحالة ممتازة، مناسب لأعمال البناء والحفر", pricePerDay: 150, city: "صنعاء", image: "https://placehold.co/400x300/2563eb/ffffff?text=حفار", category: "معدات ثقيلة", rating: 4.5, status: "available" },
-  { id: 2, ownerId: 2, ownerName: "سارة علي", title: "شاحنة نقل", description: "شاحنة لنقل المواد والبضائع، حمولة تصل إلى 5 أطنان", pricePerDay: 250, city: "عدن", image: "https://placehold.co/400x300/16a34a/ffffff?text=شاحنة", category: "مركبات", rating: 4.2, status: "available" },
-  { id: 3, ownerId: 2, ownerName: "سارة علي", title: "مولد كهربائي", description: "مولد كهربائي 20 كيلوواط، مناسب للمنشآت والفعاليات", pricePerDay: 80, city: "تعز", image: "https://placehold.co/400x300/dc2626/ffffff?text=مولد", category: "معدات كهربائية", rating: 4.8, status: "rented" },
-  { id: 4, ownerId: 2, ownerName: "سارة علي", title: "خلاطة خرسانة", description: "خلاطة خرسانة بحالة جيدة، مناسبة لمشاريع البناء", pricePerDay: 120, city: "صنعاء", image: "https://placehold.co/400x300/ca8a04/ffffff?text=خلاطة", category: "معدات بناء", rating: 4.0, status: "available" },
-  { id: 5, ownerId: 2, ownerName: "سارة علي", title: "رافعة برجية", description: "رافعة برجية للأعمال الشاهقة، بارتفاع 30 متراً", pricePerDay: 500, city: "صنعاء", image: "https://placehold.co/400x300/7c3aed/ffffff?text=رافعة", category: "معدات ثقيلة", rating: 4.6, status: "maintenance" },
-  { id: 6, ownerId: 2, ownerName: "سارة علي", title: "ضاغط هواء", description: "ضاغط هواء صناعي مع جميع الملحقات", pricePerDay: 60, city: "الحديدة", image: "https://placehold.co/400x300/db2777/ffffff?text=ضاغط", category: "معدات صناعية", rating: 4.1, status: "available" },
+  { id: 1, ownerId: 2, ownerName: "سارة القحطاني", title: "حفار صغير", description: "حفار صغير للإيجار بحالة ممتازة، مناسب لأعمال البناء والحفر", pricePerDay: 150, city: "الرياض", image: img("1581091226825-a6a2a5aee158", "حفار"), category: "معدات ثقيلة", rating: 4.5, status: "available" },
+  { id: 2, ownerId: 2, ownerName: "سارة القحطاني", title: "شاحنة نقل", description: "شاحنة لنقل المواد والبضائع، حمولة تصل إلى 5 أطنان", pricePerDay: 250, city: "جدة", image: img("1558618666-fcd25c85f82e", "شاحنة"), category: "مركبات", rating: 4.2, status: "available" },
+  { id: 3, ownerId: 2, ownerName: "سارة القحطاني", title: "مولد كهربائي", description: "مولد كهربائي 20 كيلوواط، مناسب للمنشآت والفعاليات", pricePerDay: 80, city: "مكة", image: img("1504328345606-18bbc8c9d7d1", "مولد"), category: "معدات كهربائية", rating: 4.8, status: "rented" },
+  { id: 4, ownerId: 2, ownerName: "سارة القحطاني", title: "خلاطة خرسانة", description: "خلاطة خرسانة بحالة جيدة، مناسبة لمشاريع البناء", pricePerDay: 120, city: "الرياض", image: img("1581092160607-ee22621dd758", "خلاطة"), category: "معدات بناء", rating: 4.0, status: "available" },
+  { id: 5, ownerId: 2, ownerName: "سارة القحطاني", title: "رافعة برجية", description: "رافعة برجية للأعمال الشاهقة، بارتفاع 30 متراً", pricePerDay: 500, city: "الدمام", image: img("1541888946425-d81bb4b8e605", "رافعة"), category: "معدات ثقيلة", rating: 4.6, status: "maintenance" },
+  { id: 6, ownerId: 2, ownerName: "سارة القحطاني", title: "ضاغط هواء", description: "ضاغط هواء صناعي مع جميع الملحقات", pricePerDay: 60, city: "الخبر", image: img("1581092795360-fd1ca04f0952", "ضاغط"), category: "معدات صناعية", rating: 4.1, status: "available" },
 ];
 
-export const assetStatusLabels = {
-  available: "متاح", rented: "مؤجر", maintenance: "صيانة",
-};
-
+export const assetStatusLabels = { available: "متاح", rented: "مؤجر", maintenance: "صيانة" };
 export const assetStatusColors = {
   available: "bg-emerald-50 text-emerald-700 border-emerald-200",
   rented: "bg-amber-50 text-amber-700 border-amber-200",
@@ -28,12 +26,12 @@ export const assetStatusColors = {
 };
 
 export const bookings = [
-  { id: 1, assetId: 1, assetTitle: "حفار صغير", assetImage: "https://placehold.co/400x300/2563eb/ffffff?text=حفار", tenantId: 1, tenantName: "أحمد محمد", startDate: "2026-05-20", endDate: "2026-05-25", totalPrice: 750, status: "pending", createdAt: "2026-05-14", paymentStatus: null },
-  { id: 2, assetId: 2, assetTitle: "شاحنة نقل", assetImage: "https://placehold.co/400x300/16a34a/ffffff?text=شاحنة", tenantId: 1, tenantName: "أحمد محمد", startDate: "2026-05-18", endDate: "2026-05-20", totalPrice: 500, status: "approved", createdAt: "2026-05-13", paymentStatus: "pending" },
-  { id: 3, assetId: 3, assetTitle: "مولد كهربائي", assetImage: "https://placehold.co/400x300/dc2626/ffffff?text=مولد", tenantId: 1, tenantName: "أحمد محمد", startDate: "2026-05-10", endDate: "2026-05-15", totalPrice: 400, status: "completed", createdAt: "2026-05-08", paymentStatus: "paid" },
-  { id: 4, assetId: 4, assetTitle: "خلاطة خرسانة", assetImage: "https://placehold.co/400x300/ca8a04/ffffff?text=خلاطة", tenantId: 1, tenantName: "أحمد محمد", startDate: "2026-06-01", endDate: "2026-06-05", totalPrice: 600, status: "rejected", createdAt: "2026-05-12", paymentStatus: null },
-  { id: 5, assetId: 6, assetTitle: "ضاغط هواء", assetImage: "https://placehold.co/400x300/db2777/ffffff?text=ضاغط", tenantId: 2, tenantName: "سارة علي", startDate: "2026-05-22", endDate: "2026-05-28", totalPrice: 360, status: "pending", createdAt: "2026-05-14", paymentStatus: null },
-  { id: 6, assetId: 1, assetTitle: "حفار صغير", assetImage: "https://placehold.co/400x300/2563eb/ffffff?text=حفار", tenantId: 2, tenantName: "سارة علي", startDate: "2026-06-10", endDate: "2026-06-15", totalPrice: 750, status: "active", createdAt: "2026-05-05", paymentStatus: "paid" },
+  { id: 1, assetId: 1, assetTitle: "حفار صغير", assetImage: img("1581091226825-a6a2a5aee158", "حفار"), tenantId: 1, tenantName: "أحمد الحربي", startDate: "2026-05-20", endDate: "2026-05-25", totalPrice: 750, status: "pending", createdAt: "2026-05-14", paymentStatus: null },
+  { id: 2, assetId: 2, assetTitle: "شاحنة نقل", assetImage: img("1558618666-fcd25c85f82e", "شاحنة"), tenantId: 1, tenantName: "أحمد الحربي", startDate: "2026-05-18", endDate: "2026-05-20", totalPrice: 500, status: "approved", createdAt: "2026-05-13", paymentStatus: "pending" },
+  { id: 3, assetId: 3, assetTitle: "مولد كهربائي", assetImage: img("1504328345606-18bbc8c9d7d1", "مولد"), tenantId: 1, tenantName: "أحمد الحربي", startDate: "2026-05-10", endDate: "2026-05-15", totalPrice: 400, status: "completed", createdAt: "2026-05-08", paymentStatus: "paid" },
+  { id: 4, assetId: 4, assetTitle: "خلاطة خرسانة", assetImage: img("1581092160607-ee22621dd758", "خلاطة"), tenantId: 1, tenantName: "أحمد الحربي", startDate: "2026-06-01", endDate: "2026-06-05", totalPrice: 600, status: "rejected", createdAt: "2026-05-12", paymentStatus: null },
+  { id: 5, assetId: 6, assetTitle: "ضاغط هواء", assetImage: img("1581092795360-fd1ca04f0952", "ضاغط"), tenantId: 2, tenantName: "سارة القحطاني", startDate: "2026-05-22", endDate: "2026-05-28", totalPrice: 360, status: "pending", createdAt: "2026-05-14", paymentStatus: null },
+  { id: 6, assetId: 1, assetTitle: "حفار صغير", assetImage: img("1581091226825-a6a2a5aee158", "حفار"), tenantId: 2, tenantName: "سارة القحطاني", startDate: "2026-06-10", endDate: "2026-06-15", totalPrice: 750, status: "active", createdAt: "2026-05-05", paymentStatus: "paid" },
 ];
 
 export const statusLabels = {
@@ -52,13 +50,25 @@ export const statusColors = {
 
 export const notifications = [
   { id: 1, type: "booking_status", title: "تمت الموافقة على طلبك", message: "تمت الموافقة على طلب تأجير شاحنة نقل. يرجى إتمام الدفع لتأكيد الحجز.", bookingId: 2, read: false, createdAt: "2026-05-14T10:30:00" },
-  { id: 2, type: "booking_status", title: "طلب تأجير جديد", message: "قام أحمد محمد بتقديم طلب تأجير لحفار صغير.", bookingId: 1, read: false, createdAt: "2026-05-14T09:15:00" },
+  { id: 2, type: "booking_status", title: "طلب تأجير جديد", message: "قام أحمد الحربي بتقديم طلب تأجير لحفار صغير.", bookingId: 1, read: false, createdAt: "2026-05-14T09:15:00" },
   { id: 3, type: "payment", title: "تم استلام الدفع", message: "تم استلام دفعة تأجير مولد كهربائي بقيمة 400 ﷼.", bookingId: 3, read: true, createdAt: "2026-05-10T14:00:00" },
   { id: 4, type: "booking_status", title: "تم رفض الطلب", message: "عذراً، تم رفض طلب تأجير خلاطة خرسانة.", bookingId: 4, read: true, createdAt: "2026-05-12T16:45:00" },
   { id: 5, type: "system", title: "مرحباً بك في عتاد", message: "شكراً لانضمامك إلى منصة عتاد. يمكنك الآن تصفح الأصول المتاحة للتأجير.", bookingId: null, read: true, createdAt: "2026-05-01T08:00:00" },
+  { id: 6, type: "booking_status", title: "طلب تأجير جديد", message: "قامت سارة القحطاني بتقديم طلب تأجير لضاغط هواء.", bookingId: 5, read: false, createdAt: "2026-05-14T11:00:00" },
 ];
 
 export const payments = [
   { id: 1, bookingId: 3, amount: 400, method: "mock", status: "paid", paidAt: "2026-05-10", reference: "TXN-20260510-001" },
   { id: 2, bookingId: 6, amount: 750, method: "bank_transfer", status: "paid", paidAt: "2026-05-06", reference: "TXN-20260506-002" },
+];
+
+export const ratings = [
+  { id: 1, bookingId: 3, assetId: 3, tenantId: 1, score: 4, comment: "مولد ممتاز، شكراً", createdAt: "2026-05-16" },
+];
+
+export const transactions = [
+  { id: 1, bookingId: 6, assetTitle: "حفار صغير", tenantName: "أحمد الحربي", amount: 750, type: "incoming", status: "completed", date: "2026-05-06", days: 5 },
+  { id: 2, bookingId: 3, assetTitle: "مولد كهربائي", tenantName: "أحمد الحربي", amount: 400, type: "incoming", status: "completed", date: "2026-05-10", days: 5 },
+  { id: 3, bookingId: 1, assetTitle: "حفار صغير", tenantName: "فاطمة الزهراني", amount: 750, type: "incoming", status: "pending", date: "2026-05-20", days: 5 },
+  { id: 4, bookingId: 2, assetTitle: "شاحنة نقل", tenantName: "أحمد الحربي", amount: 500, type: "incoming", status: "pending", date: "2026-05-18", days: 2 },
 ];

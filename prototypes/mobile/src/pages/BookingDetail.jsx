@@ -1,11 +1,15 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { CalendarDays, User, Wallet, FileText, AlertCircle, CreditCard, XCircle } from "lucide-react";
+import { CalendarDays, User, Wallet, FileText, AlertCircle, CreditCard, XCircle, CheckCircle } from "lucide-react";
+import { useBookings } from "../context/BookingContext";
+import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
-import { bookings, statusLabels, statusColors } from "../data/mock";
+import { statusLabels, statusColors } from "../data/mock";
 
 export default function BookingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, isLessor } = useAuth();
+  const { bookings, updateStatus, cancelBooking, completeBooking } = useBookings();
   const booking = bookings.find(b => b.id === Number(id));
 
   if (!booking) {
@@ -20,12 +24,12 @@ export default function BookingDetail() {
   }
 
   const canPay = booking.status === "approved" && booking.paymentStatus !== "paid";
-  const canCancel = booking.status === "pending" || booking.status === "approved";
+  const canCancel = (booking.status === "pending" || booking.status === "approved") && !isLessor;
+  const canComplete = booking.status === "active" && isLessor;
 
   return (
     <Layout title="تفاصيل الطلب" onBack={() => navigate(-1)}>
-      {/* Header with image */}
-      <div className="bg-white rounded-2xl border border-gray-100/80 overflow-hidden shadow-sm mb-4">
+      <div className="bg-white rounded-2xl border border-gray-100/80 overflow-hidden shadow-sm mb-4 animate-slide-up">
         <div className="aspect-[21/9] bg-gray-100 relative">
           <img src={booking.assetImage} alt={booking.assetTitle}
             className="w-full h-full object-cover" />
@@ -44,8 +48,7 @@ export default function BookingDetail() {
         </div>
       </div>
 
-      {/* Details */}
-      <div className="bg-white rounded-2xl border border-gray-100/80 divide-y divide-gray-50 shadow-sm mb-4">
+      <div className="bg-white rounded-2xl border border-gray-100/80 divide-y divide-gray-50 shadow-sm mb-4 animate-slide-up stagger-1">
         <div className="p-4 flex items-center gap-3">
           <CalendarDays className="w-5 h-5 text-primary" />
           <div>
@@ -67,48 +70,57 @@ export default function BookingDetail() {
             <p className="font-semibold text-sm text-gray-900 font-mono">#{String(booking.id).padStart(4, "0")}</p>
           </div>
         </div>
-        <div className="p-4 flex items-center gap-3">
-          <User className="w-5 h-5 text-primary" />
-          <div>
-            <p className="text-xs text-gray-400">المستأجر</p>
-            <p className="font-semibold text-sm text-gray-900">{booking.tenantName}</p>
-          </div>
-        </div>
       </div>
 
-      {/* Payment status */}
-      <div className="bg-white rounded-2xl border border-gray-100/80 p-4 shadow-sm mb-4">
+      <div className="bg-white rounded-2xl border border-gray-100/80 p-4 shadow-sm mb-4 animate-slide-up stagger-2">
         <h3 className="font-bold text-sm text-gray-900 mb-2">حالة الدفع</h3>
         {booking.paymentStatus === "paid" ? (
           <div className="flex items-center gap-2 text-emerald-600 text-sm">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full" />
-            تم الدفع
+            <span className="w-2 h-2 bg-emerald-500 rounded-full" /> تم الدفع
           </div>
         ) : booking.paymentStatus === "pending" ? (
           <div className="flex items-center gap-2 text-amber-600 text-sm">
-            <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-            في انتظار الدفع
+            <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" /> في انتظار الدفع
           </div>
         ) : (
           <div className="flex items-center gap-2 text-gray-400 text-sm">
-            <span className="w-2 h-2 bg-gray-300 rounded-full" />
-            غير مطلوب
+            <span className="w-2 h-2 bg-gray-300 rounded-full" /> غير مطلوب
           </div>
         )}
       </div>
 
-      {/* Actions */}
+      {/* Lessor actions */}
+      {isLessor && booking.status === "pending" && (
+        <div className="flex gap-2 mb-3">
+          <button onClick={() => { updateStatus(booking.id, "approved"); }}
+            className="flex-1 bg-emerald-500 text-white font-bold py-3 btn-pill hover:bg-emerald-600 transition-all flex items-center justify-center gap-2">
+            <CheckCircle className="w-5 h-5" /> قبول
+          </button>
+          <button onClick={() => { updateStatus(booking.id, "rejected"); }}
+            className="flex-1 bg-red-50 text-red-600 font-bold py-3 btn-pill border border-red-200 hover:bg-red-100 transition-all flex items-center justify-center gap-2">
+            <XCircle className="w-5 h-5" /> رفض
+          </button>
+        </div>
+      )}
+
+      {canComplete && (
+        <button onClick={() => { completeBooking(booking.id); }}
+          className="w-full bg-emerald-500 text-white font-bold py-3 btn-pill hover:bg-emerald-600 transition-all flex items-center justify-center gap-2 mb-3">
+          <CheckCircle className="w-5 h-5" /> تأكيد إنهاء التأجير
+        </button>
+      )}
+
+      {/* Tenant actions */}
       {canPay && (
         <button onClick={() => navigate(`/payment/${booking.id}`)}
-          className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold py-3.5 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 active:scale-[0.98] flex items-center justify-center gap-2 mb-3">
-          <CreditCard className="w-5 h-5" />
-          إتمام الدفع
+          className="w-full bg-primary text-white font-bold py-3 btn-pill hover:bg-primary-dark transition-all flex items-center justify-center gap-2 mb-3">
+          <CreditCard className="w-5 h-5" /> إتمام الدفع
         </button>
       )}
       {canCancel && (
-        <button className="w-full text-red-500 font-semibold py-3.5 rounded-2xl border border-red-200/80 hover:bg-red-50 transition-all flex items-center justify-center gap-2">
-          <XCircle className="w-5 h-5" />
-          إلغاء الطلب
+        <button onClick={() => { cancelBooking(booking.id); }}
+          className="w-full text-red-500 font-semibold py-3 btn-pill border border-red-200/80 hover:bg-red-50 transition-all flex items-center justify-center gap-2">
+          <XCircle className="w-5 h-5" /> إلغاء الطلب
         </button>
       )}
     </Layout>

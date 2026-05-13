@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, ClipboardList, CalendarDays, DollarSign, Eye } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Search, ClipboardList, CalendarDays, DollarSign, Eye, Package } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import { bookings, statusLabels, statusColors } from "../data/mock";
 
@@ -32,10 +33,8 @@ export default function AdminBookings() {
           <div className="flex gap-2 overflow-x-auto scrollbar-hide items-center">
             {filterTabs.map(tab => (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-                className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                  activeTab === tab.key
-                    ? "bg-primary text-white shadow-sm"
-                    : "bg-gray-50 text-gray-500 border border-gray-200/80 hover:border-gray-300"
+                className={`whitespace-nowrap px-3 py-1.5 text-xs font-medium transition-all tab-underline ${
+                  activeTab === tab.key ? "tab-active text-gray-900" : "text-gray-500"
                 }`}>
                 {tab.label}
                 {tab.key !== "all" && (
@@ -76,10 +75,11 @@ export default function AdminBookings() {
                     </span>
                   </td>
                   <td className="p-3 text-center">
-                    <button className="inline-flex items-center gap-1 text-xs text-primary font-semibold hover:bg-primary/5 px-2.5 py-1.5 rounded-lg transition-colors">
+                    <Link to={`/admin/booking/${b.id}`}
+                      className="inline-flex items-center gap-1 text-xs text-primary font-semibold hover:bg-primary/5 px-2.5 py-1.5 rounded-lg transition-colors">
                       <Eye className="w-3.5 h-3.5" />
                       تفاصيل
-                    </button>
+                    </Link>
                   </td>
                 </tr>
               ))}

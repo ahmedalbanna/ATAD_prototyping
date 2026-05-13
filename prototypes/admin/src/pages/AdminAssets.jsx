@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Search, Package, MapPin, DollarSign, Calendar } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import { assets } from "../data/mock";
@@ -60,7 +61,11 @@ export default function AdminAssets() {
               {filtered.map((asset, idx) => (
                 <tr key={asset.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                   <td className="p-3 text-gray-400 font-mono text-xs">{String(idx + 1).padStart(2, "0")}</td>
-                  <td className="p-3 font-medium text-gray-900">{asset.title}</td>
+                  <td className="p-3">
+                    <Link to={`/admin/asset/${asset.id}`} className="font-medium text-gray-900 hover:text-primary transition-colors">
+                      {asset.title}
+                    </Link>
+                  </td>
                   <td className="p-3 text-gray-500">{asset.ownerName}</td>
                   <td className="p-3 font-semibold text-gray-900">{asset.pricePerDay} ﷼</td>
                   <td className="p-3 text-gray-400">{asset.city}</td>

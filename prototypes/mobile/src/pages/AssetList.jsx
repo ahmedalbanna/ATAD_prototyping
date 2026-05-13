@@ -36,7 +36,7 @@ export default function AssetList() {
             className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
               activeCategory === cat
                 ? "bg-primary text-white shadow-sm"
-                : "bg-white text-gray-500 border border-gray-200/80 hover:border-gray-300"
+                : "bg-white text-gray-500 border border-gray-200/80 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.97]"
             }`}>
             {cat}
           </button>
@@ -56,7 +56,7 @@ export default function AssetList() {
             className={`text-xs px-3 py-1.5 rounded-full transition-all duration-200 ${
               sortBy === opt.value
                 ? "bg-primary/10 text-primary font-semibold"
-                : "text-gray-400 bg-white border border-gray-200/80 hover:border-gray-300"
+                : "text-gray-400 bg-white border border-gray-200/80 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.97]"
             }`}>
             {opt.label}
           </button>
@@ -66,15 +66,19 @@ export default function AssetList() {
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-20 text-gray-300">
-          <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
+        <div className="flex flex-col items-center justify-center py-20 text-gray-300 animate-scale-in">
+          <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center mb-4">
+            <Search className="w-8 h-8 opacity-40" />
+          </div>
           <p className="font-medium text-gray-400">لا توجد نتائج</p>
           <p className="text-xs text-gray-300 mt-1">حاول تغيير معايير البحث</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3">
-          {filtered.map(asset => (
-            <AssetCard key={asset.id} asset={asset} />
+          {filtered.map((asset, i) => (
+            <div key={asset.id} className="animate-slide-up" style={{ animationDelay: `${i * 0.05}s` }}>
+              <AssetCard asset={asset} />
+            </div>
           ))}
         </div>
       )}
