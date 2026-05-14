@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Smartphone, ShieldCheck, Loader, User, Building2 } from "lucide-react";
+import { ArrowRight, Smartphone, ShieldCheck, Loader, User, Building2, LogIn } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 
@@ -17,13 +17,17 @@ export default function Auth() {
   const [otp, setOtp] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState("tenant");
-  const [isNewUser, setIsNewUser] = useState(false);
+  const [showPhoneLogin, setShowPhoneLogin] = useState(false);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
-    if (phone.length < 9) return;
+    if (phone.length < 6) return;
+    if (mode === "register" && !name.trim()) {
+      showToast("يرجى إدخال الاسم الكامل", "error");
+      return;
+    }
     try {
-      await sendOtp(phone, role);
+      await sendOtp(phone, role, mode === "register" ? name : undefined);
       setStep("otp");
     } catch (err) {
       showToast(err.message || "فشل إرسال رمز التحقق", "error");
@@ -95,77 +99,102 @@ export default function Auth() {
           </h1>
         </div>
 
-        <form onSubmit={handleSendOtp} className="space-y-4">
-          {mode === "register" && (
+        {mode === "login" ? (
+          <>
+            {/* Trial accounts - primary login method */}
+            <div className="space-y-2 mb-5">
+              <p className="text-xs text-gray-400 text-center mb-3">حسابات تجريبية للمعاينة</p>
+              {allUsers.filter(u => u.role !== "admin").map(u => {
+                const Icon = roleIcons[u.role];
+                return (
+                  <button key={u.id} type="button" onClick={() => handleQuickLogin(u)}
+                    className="w-full flex items-center gap-3 p-3.5 rounded-xl border-2 border-gray-100 hover:border-primary/30 hover:bg-primary/[0.02] transition-all text-right group shadow-sm">
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${
+                      u.role === "tenant" ? "bg-blue-50" : "bg-emerald-50"
+                    } group-hover:scale-105 transition-transform`}>
+                      <Icon className={`w-5 h-5 ${u.role === "tenant" ? "text-blue-600" : "text-emerald-600"}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-gray-900">{u.name}</p>
+                      <p className="text-[11px] text-gray-400">{roleLabels[u.role]}</p>
+                    </div>
+                    <span className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-primary text-white font-semibold shrink-0">
+                      <LogIn className="w-3 h-3" /> دخول
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Phone login toggle */}
+            <button onClick={() => setShowPhoneLogin(!showPhoneLogin)}
+              className="w-full flex items-center justify-center gap-1.5 text-xs text-gray-400 py-2 hover:text-gray-600 transition-colors">
+              <Smartphone className="w-3.5 h-3.5" />
+              {showPhoneLogin ? "إخفاء تسجيل الدخول برقم الجوال" : "تسجيل الدخول برقم الجوال"}
+            </button>
+
+            {showPhoneLogin && (
+              <form onSubmit={handleSendOtp} className="space-y-4 mt-3 p-4 bg-gray-50/50 rounded-xl border border-gray-100">
+                <div className="flex gap-2">
+                  <span className="flex items-center px-3 border-2 border-gray-200 rounded-xl text-gray-500 bg-white text-sm shrink-0">+966</span>
+                  <input type="tel" inputMode="numeric" value={phone}
+                    onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 15))}
+                    placeholder="500000000"
+                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors bg-white" />
+                </div>
+                <button type="submit" disabled={phone.length < 6 || loading}
+                  className="w-full bg-primary text-white font-bold py-2.5 btn-pill transition-all hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                  {loading && <Loader className="w-4 h-4 animate-spin" />}
+                  تسجيل الدخول
+                </button>
+              </form>
+            )}
+          </>
+        ) : (
+          /* Register mode - with role selection, no trial accounts */
+          <form onSubmit={handleSendOtp} className="space-y-4">
             <input type="text" value={name} onChange={e => setName(e.target.value)}
               placeholder="الاسم الكامل"
               className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors bg-gray-50/50" />
-          )}
 
-          <div className="flex gap-2">
-            <span className="flex items-center px-3 border-2 border-gray-200 rounded-xl text-gray-500 bg-gray-50 text-sm shrink-0">+966</span>
-            <input type="tel" inputMode="numeric" value={phone}
-              onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
-              placeholder="777000000"
-              className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors bg-gray-50/50" />
-          </div>
+            <div className="flex gap-2">
+              <span className="flex items-center px-3 border-2 border-gray-200 rounded-xl text-gray-500 bg-gray-50 text-sm shrink-0">+966</span>
+              <input type="tel" inputMode="numeric" value={phone}
+                onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 15))}
+                placeholder="500000000"
+                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors bg-gray-50/50" />
+            </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            {["tenant", "lessor"].map(r => {
-              const Icon = roleIcons[r];
-              return (
-                <button key={r} type="button" onClick={() => setRole(r)}
-                  className={`p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                    role === r ? "border-primary bg-primary/5 text-primary" : "border-gray-200 text-gray-500 hover:border-gray-300"
-                  }`}>
-                  <Icon className={`w-5 h-5 mx-auto mb-1 ${role === r ? "text-primary" : "text-gray-400"}`} />
-                  {roleLabels[r]}
-                </button>
-              );
-            })}
-          </div>
+            <div className="grid grid-cols-2 gap-2">
+              {["tenant", "lessor"].map(r => {
+                const Icon = roleIcons[r];
+                return (
+                  <button key={r} type="button" onClick={() => setRole(r)}
+                    className={`p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                      role === r ? "border-primary bg-primary/5 text-primary" : "border-gray-200 text-gray-500 hover:border-gray-300"
+                    }`}>
+                    <Icon className={`w-5 h-5 mx-auto mb-1 ${role === r ? "text-primary" : "text-gray-400"}`} />
+                    {roleLabels[r]}
+                  </button>
+                );
+              })}
+            </div>
 
-          <button type="submit" disabled={phone.length < 9 || loading}
-            className="w-full bg-primary text-white font-bold py-3 btn-pill transition-all hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-            {loading && <Loader className="w-4 h-4 animate-spin" />}
-            {mode === "login" ? "تسجيل الدخول" : "إنشاء حساب"}
-          </button>
-        </form>
+            <button type="submit" disabled={phone.length < 6 || loading}
+              className="w-full bg-primary text-white font-bold py-3 btn-pill transition-all hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              {loading && <Loader className="w-4 h-4 animate-spin" />}
+              إنشاء حساب
+            </button>
+          </form>
+        )}
 
         <p className="text-center mt-5 text-sm text-gray-400">
           {mode === "login" ? "ليس لديك حساب؟ " : "لديك حساب بالفعل؟ "}
-          <button onClick={() => { setMode(mode === "login" ? "register" : "login"); setRole("tenant"); }}
+          <button onClick={() => { setMode(mode === "login" ? "register" : "login"); setRole("tenant"); setShowPhoneLogin(false); }}
             className="text-primary font-semibold">
             {mode === "login" ? "إنشاء حساب" : "تسجيل الدخول"}
           </button>
         </p>
-
-        {/* Demo accounts */}
-        <div className="mt-6 pt-4 border-t border-gray-100">
-          <p className="text-xs text-gray-400 mb-3 text-center">حسابات تجريبية للمعاينة</p>
-          <div className="space-y-2">
-            {allUsers.filter(u => u.role !== "admin").map(u => {
-              const Icon = roleIcons[u.role];
-              return (
-                <button key={u.id} type="button" onClick={() => handleQuickLogin(u)}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-100/80 hover:border-primary/20 hover:bg-primary/[0.02] transition-all text-right group shadow-sm">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                    u.role === "tenant" ? "bg-blue-50" : "bg-emerald-50"
-                  } group-hover:scale-105 transition-transform`}>
-                    <Icon className={`w-5 h-5 ${u.role === "tenant" ? "text-blue-600" : "text-emerald-600"}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-gray-900">{u.name}</p>
-                    <p className="text-[11px] text-gray-400">{roleLabels[u.role]}</p>
-                  </div>
-                  <span className="text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary font-semibold shrink-0">
-                    دخول
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
       </div>
     </div>
   );

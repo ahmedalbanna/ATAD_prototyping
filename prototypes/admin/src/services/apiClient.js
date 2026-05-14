@@ -10,9 +10,10 @@ export async function adminLogin(email, password) {
     });
     const data = await res.json();
     if (data.success) {
-      token = data.token;
+      const d = data.data;
+      token = d.token;
       localStorage.setItem("atad_admin_token", token);
-      localStorage.setItem("atad_admin_user", JSON.stringify(data.user));
+      localStorage.setItem("atad_admin_user", JSON.stringify(d.user));
     }
     return data.success;
   } catch {

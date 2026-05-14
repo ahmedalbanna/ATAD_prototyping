@@ -7,7 +7,7 @@ const roleLabels = { tenant: "مستأجر", lessor: "مؤجر" };
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, logout, switchUser, allUsers, isLessor } = useAuth();
+  const { user, logout, switchUser, allUsers, isLessor, isRealAccount } = useAuth();
 
   const otherRoleUsers = allUsers.filter(u => u.role !== user?.role);
   const sameRoleUsers = allUsers.filter(u => u.role === user?.role && u.id !== user?.id);
@@ -49,7 +49,7 @@ export default function Profile() {
       </div>
 
       {/* Quick switch - same role */}
-      {sameRoleUsers.length > 0 && (
+      {!isRealAccount && sameRoleUsers.length > 0 && (
         <div className="bg-white rounded-2xl p-4 border border-gray-100/80 shadow-sm mb-4 animate-slide-up">
           <div className="flex items-center gap-2 mb-2.5">
             <Repeat className="w-4 h-4 text-primary" />
@@ -74,7 +74,7 @@ export default function Profile() {
       )}
 
       {/* Switch to other role */}
-      {otherRoleUsers.length > 0 && (
+      {!isRealAccount && otherRoleUsers.length > 0 && (
         <div className="bg-white rounded-2xl p-4 border border-gray-100/80 shadow-sm mb-4 animate-slide-up stagger-1">
           <div className="flex items-center gap-2 mb-2.5">
             <Repeat className="w-4 h-4 text-amber-500" />

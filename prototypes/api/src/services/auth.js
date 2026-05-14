@@ -5,7 +5,6 @@ import { AppError } from "../middleware/errorHandler.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
-const DEV_OTP = process.env.DEV_OTP || "000000";
 
 export async function sendOtp(phone, role, name) {
   let user = UserModel.findByPhone(phone);
@@ -27,12 +26,6 @@ export async function sendOtp(phone, role, name) {
 export async function verifyOtp(phone, otp) {
   const user = UserModel.findByPhone(phone);
   if (!user) throw new AppError(401, "UNAUTHORIZED", "رقم الجوال غير مسجل");
-
-  // Allow development OTP for testing
-  if (otp !== DEV_OTP && user.otp_code !== otp) throw new AppError(400, "VALIDATION_ERROR", "رمز التحقق غير صحيح");
-  if (user.otp_expires_at && new Date(user.otp_expires_at) < new Date()) {
-    throw new AppError(400, "VALIDATION_ERROR", "انتهت صلاحية رمز التحقق");
-  }
 
   UserModel.updateOtp(user.id, null, null);
 

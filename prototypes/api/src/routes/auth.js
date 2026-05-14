@@ -23,7 +23,7 @@ router.post("/verify-otp", async (req, res, next) => {
     if (!phone || !otp) return res.status(400).json({ success: false, error: { code: "VALIDATION_ERROR", message: "رقم الجوال ورمز التحقق مطلوبان" } });
 
     const result = await AuthService.verifyOtp(phone, otp);
-    res.json({ success: true, ...result });
+    res.json({ success: true, data: result });
   } catch (err) {
     next(err);
   }
@@ -35,7 +35,7 @@ router.post("/admin-login", async (req, res, next) => {
     if (!email || !password) return res.status(400).json({ success: false, error: { code: "VALIDATION_ERROR", message: "البريد الإلكتروني وكلمة المرور مطلوبان" } });
 
     const result = await AuthService.adminLogin(email, password);
-    res.json({ success: true, ...result });
+    res.json({ success: true, data: result });
   } catch (err) {
     next(err);
   }
