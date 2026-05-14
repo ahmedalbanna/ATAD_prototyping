@@ -16,6 +16,25 @@ export const normalizeAsset = (a) => ({
   owner: { id: a.ownerId, name: a.ownerName },
 });
 
+export const normalizeBooking = (b) => ({
+  id: b.id,
+  asset: {
+    id: b.assetId,
+    title: b.assetTitle,
+    image_url: b.assetImage,
+  },
+  tenant: {
+    id: b.tenantId,
+    name: b.tenantName,
+  },
+  start_date: b.startDate,
+  end_date: b.endDate,
+  total_price: b.totalPrice,
+  status: b.status,
+  payment_status: b.paymentStatus,
+  created_at: b.createdAt,
+});
+
 export const categories = [
   "الكل", "معدات ثقيلة", "مركبات", "معدات كهربائية", "معدات بناء", "معدات صناعية", "أدوات يدوية"
 ];

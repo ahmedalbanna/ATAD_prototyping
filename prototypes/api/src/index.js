@@ -11,6 +11,7 @@ import bookingRoutes from "./routes/bookings.js";
 import paymentRoutes from "./routes/payments.js";
 import ratingRoutes from "./routes/ratings.js";
 import adminRoutes from "./routes/admin.js";
+import notificationRoutes from "./routes/notifications.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -34,6 +35,7 @@ app.use("/api/v1/bookings", bookingRoutes);
 app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/ratings", ratingRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
 
 // 404 handler
 app.use((req, res) => {

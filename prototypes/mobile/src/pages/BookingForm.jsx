@@ -53,8 +53,15 @@ export default function BookingForm() {
     if (Object.keys(errs).length > 0) return;
 
     try {
-      await createBooking({ assetId: asset.id, startDate, endDate });
-      showToast("تم تقديم الطلب بنجاح! بانتظار موافقة المؤجر", "success");
+      await createBooking({
+        assetId: asset.id,
+        startDate,
+        endDate,
+        assetTitle: asset.title,
+        assetImage: asset.image_url,
+        tenantId: user?.id,
+        tenantName: user?.name,
+      });
       setTimeout(() => navigate("/bookings", { replace: true }), 800);
     } catch (err) {
       showToast(err.message || "فشل إنشاء الطلب", "error");

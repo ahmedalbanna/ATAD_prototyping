@@ -1,6 +1,7 @@
 import * as BookingModel from "../models/Booking.js";
 import * as AssetModel from "../models/Asset.js";
 import * as TransactionModel from "../models/Transaction.js";
+import * as NotificationModel from "../models/Notification.js";
 import { AppError } from "../middleware/errorHandler.js";
 
 const VALID_TRANSITIONS = {
@@ -12,7 +13,7 @@ const VALID_TRANSITIONS = {
 };
 
 export function listBookings(filters) {
-  return BookingModel.findAll(filters);
+  return BookingModel.findAll(filters).map(formatBooking);
 }
 
 export function getBooking(id) {
@@ -49,6 +50,17 @@ export async function createBooking(data) {
     total_price: totalPrice,
   });
 
+  // Notify asset owner
+  try {
+    NotificationModel.create({
+      user_id: asset.owner_id,
+      type: "booking_status",
+      title: "طلب تأجير جديد",
+      message: `تم تقديم طلب تأجير ${asset.title}.`,
+      booking_id: booking.id,
+    });
+  } catch {}
+
   return formatBooking(booking);
 }
 
@@ -71,6 +83,30 @@ export function transitionStatus(bookingId, newStatus, actor) {
   BookingModel.updateStatus(bookingId, newStatus);
   BookingModel.insertStatusHistory(bookingId, booking.status, newStatus, actor.id);
 
+  // Notify tenant on lessor decision
+  if (actor.role === "lessor" || actor.role === "admin") {
+    try {
+      if (newStatus === "approved") {
+        NotificationModel.create({
+          user_id: booking.tenant_id,
+          type: "booking_status",
+          title: "تمت الموافقة على طلبك",
+          message: `تمت الموافقة على طلب تأجير ${booking.asset_title}. يرجى إتمام الدفع لتأكيد الحجز.`,
+          booking_id: bookingId,
+        });
+      } else if (newStatus === "rejected") {
+        NotificationModel.create({
+          user_id: booking.tenant_id,
+          type: "booking_status",
+          title: "تم رفض الطلب",
+          message: `عذراً، تم رفض طلب تأجير ${booking.asset_title}.`,
+          booking_id: bookingId,
+        });
+      }
+    } catch {}
+  }
+
+  // Notify tenant on lessor completion
   if (newStatus === "completed") {
     const asset = AssetModel.findById(booking.asset_id);
     if (asset) {
@@ -87,6 +123,15 @@ export function transitionStatus(bookingId, newStatus, actor) {
         status: "completed",
       });
       AssetModel.updateStatus(booking.asset_id, "available", asset.owner_id);
+      try {
+        NotificationModel.create({
+          user_id: booking.tenant_id,
+          type: "booking_status",
+          title: "تم إنهاء التأجير",
+          message: `تم إنهاء تأجير ${asset.title}. شكراً لتعاملك مع عتاد.`,
+          booking_id: bookingId,
+        });
+      } catch {}
     }
   }
 
@@ -107,6 +152,19 @@ export function cancelAsTenant(bookingId, tenantId) {
   const asset = AssetModel.findById(booking.asset_id);
   if (asset && booking.status === "approved") {
     AssetModel.updateStatus(booking.asset_id, "available", asset.owner_id);
+  }
+
+  // Notify lessor
+  if (asset) {
+    try {
+      NotificationModel.create({
+        user_id: asset.owner_id,
+        type: "booking_status",
+        title: "تم إلغاء الطلب",
+        message: `تم إلغاء طلب تأجير ${asset.title} من قبل المستأجر.`,
+        booking_id: bookingId,
+      });
+    } catch {}
   }
 
   return getBooking(bookingId);

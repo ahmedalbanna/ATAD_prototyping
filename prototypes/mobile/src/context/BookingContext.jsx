@@ -7,6 +7,7 @@ const BookingContext = createContext(null);
 export function BookingProvider({ children }) {
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchBookings = useCallback(async () => {
@@ -15,11 +16,29 @@ export function BookingProvider({ children }) {
       const data = await api.get("/bookings");
       setBookings(Array.isArray(data) ? data : []);
     } catch {
-      setBookings([]);
+      // API unavailable
+    }
+  }, [user]);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!user) { setNotifications([]); return; }
+    try {
+      const data = await api.get("/notifications");
+      setNotifications(Array.isArray(data) ? data : []);
+    } catch {
+      // API unavailable
     }
   }, [user]);
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
+  useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
+
+  // Poll every 5s
+  useEffect(() => {
+    if (!user) return;
+    const id = setInterval(() => { fetchBookings(); fetchNotifications(); }, 5000);
+    return () => clearInterval(id);
+  }, [user, fetchBookings, fetchNotifications]);
 
   const createBooking = useCallback(async ({ assetId, startDate, endDate }) => {
     setLoading(true);
@@ -43,17 +62,6 @@ export function BookingProvider({ children }) {
     }
   }, []);
 
-  const setPaymentStatus = useCallback(async (bookingId) => {
-    setLoading(true);
-    try {
-      const result = await api.post("/payments", { booking_id: bookingId, method: "mock" });
-      await fetchBookings();
-      return result;
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchBookings]);
-
   const cancelBooking = useCallback(async (bookingId) => {
     setLoading(true);
     try {
@@ -65,14 +73,42 @@ export function BookingProvider({ children }) {
     }
   }, []);
 
+  const setPaymentStatus = useCallback(async (bookingId) => {
+    setLoading(true);
+    try {
+      const result = await api.post("/payments", { booking_id: bookingId, method: "mock" });
+      await fetchBookings();
+      return result;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchBookings]);
+
   const completeBooking = useCallback(async (bookingId) => {
     return updateStatus(bookingId, "completed");
   }, [updateStatus]);
+
+  const markNotificationRead = useCallback(async (id) => {
+    try {
+      await api.patch(`/notifications/${id}/read`);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: 1 } : n));
+    } catch {}
+  }, []);
+
+  const markAllNotificationsRead = useCallback(async () => {
+    try {
+      await api.patch("/notifications/read-all");
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: 1 })));
+    } catch {}
+  }, []);
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
     <BookingContext.Provider value={{
       bookings, loading, fetchBookings,
       createBooking, updateStatus, setPaymentStatus, cancelBooking, completeBooking,
+      notifications, unreadCount, markNotificationRead, markAllNotificationsRead,
     }}>
       {children}
     </BookingContext.Provider>

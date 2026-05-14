@@ -117,12 +117,13 @@ export default function LessorDashboard() {
             <div className="flex gap-1.5 overflow-x-auto scrollbar-hide mb-4 pb-1">
               {bookingStatuses.map(s => (
                 <button key={s.key} onClick={() => setBookingFilter(s.key)}
-                  className={`whitespace-nowrap px-3 py-1.5 text-xs font-medium transition-all rounded-full ${
+                  className={`whitespace-nowrap px-3.5 py-1.5 text-xs font-medium transition-all rounded-full ${
                     bookingFilter === s.key
-                      ? "bg-primary text-white shadow-sm"
-                      : "bg-white text-gray-500 border border-gray-200/80 hover:bg-gray-50"
+                      ? "bg-primary text-white shadow-sm shadow-primary/20"
+                      : "bg-white text-gray-500 border border-gray-200/80 hover:bg-gray-50 hover:border-gray-300"
                   }`}>
-                  {s.label} ({s.count})
+                  {s.label}
+                  <span className={`mr-1.5 ${bookingFilter === s.key ? "text-white/70" : "text-gray-400"}`}>({s.count})</span>
                 </button>
               ))}
             </div>
@@ -140,35 +141,34 @@ export default function LessorDashboard() {
             ) : (
               <div className="space-y-2">
                 {filteredBookings.map(booking => (
-                  <div key={booking.id} className="bg-white rounded-xl border border-gray-100/80 shadow-sm overflow-hidden">
-                    <BookingCard booking={booking} />
-                    {booking.status === "pending" && (
-                      <div className="flex gap-1.5 px-3 pb-3 pt-0">
+                  <BookingCard key={booking.id} booking={booking} actions={
+                    booking.status === "pending" ? (
+                      <div className="flex gap-1.5 pt-1">
                         <button onClick={() => updateStatus(booking.id, "approved")}
-                          className="flex-1 bg-emerald-500 text-white text-xs font-bold py-2 btn-pill hover:bg-emerald-600 transition-all flex items-center justify-center gap-1">
+                          className="flex-1 bg-gradient-to-l from-emerald-500 to-emerald-400 text-white text-xs font-bold py-2 btn-pill hover:shadow-md hover:shadow-emerald-500/20 transition-all flex items-center justify-center gap-1 active:scale-[0.97]">
                           <CheckCircle className="w-3.5 h-3.5" /> قبول
                         </button>
                         <button onClick={() => updateStatus(booking.id, "rejected")}
-                          className="flex-1 bg-red-50 text-red-600 text-xs font-bold py-2 btn-pill border border-red-200 hover:bg-red-100 transition-all flex items-center justify-center gap-1">
+                          className="flex-1 bg-white text-red-600 text-xs font-bold py-2 btn-pill border-2 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all flex items-center justify-center gap-1 active:scale-[0.97]">
                           <XCircle className="w-3.5 h-3.5" /> رفض
                         </button>
                       </div>
-                    )}
-                    {booking.status === "active" && (
-                      <div className="px-3 pb-3 pt-0">
-                        <div className="bg-emerald-50 text-emerald-700 text-xs rounded-lg p-2 text-center font-medium">
+                    ) : booking.status === "active" ? (
+                      <div className="pt-1">
+                        <div className="bg-gradient-to-l from-emerald-50 to-emerald-100/60 text-emerald-700 text-xs rounded-xl p-2.5 text-center font-medium border border-emerald-200/50 shadow-sm">
+                          <span className="inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full ml-1.5 animate-pulse" />
                           تأجير نشط — ينتهي في {booking.end_date}
                         </div>
                       </div>
-                    )}
-                    {booking.status === "approved" && (
-                      <div className="px-3 pb-3 pt-0">
-                        <div className="bg-blue-50 text-blue-700 text-xs rounded-lg p-2 text-center font-medium">
+                    ) : booking.status === "approved" ? (
+                      <div className="pt-1">
+                        <div className="bg-gradient-to-l from-blue-50 to-blue-100/60 text-blue-700 text-xs rounded-xl p-2.5 text-center font-medium border border-blue-200/50 shadow-sm">
+                          <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full ml-1.5" />
                           تمت الموافقة — في انتظار الدفع
                         </div>
                       </div>
-                    )}
-                  </div>
+                    ) : null
+                  } />
                 ))}
               </div>
             )}

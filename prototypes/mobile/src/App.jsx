@@ -29,8 +29,8 @@ import Profile from "./pages/Profile";
 export default function App() {
   return (
     <AuthProvider>
-      <BookingProvider>
       <ToastProvider>
+      <BookingProvider>
       <Routes>
         <Route path="/" element={<Splash />} />
         <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
@@ -56,8 +56,8 @@ export default function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
-      </ToastProvider>
       </BookingProvider>
+      </ToastProvider>
     </AuthProvider>
   );
 }
