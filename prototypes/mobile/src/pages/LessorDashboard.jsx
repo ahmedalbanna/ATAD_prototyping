@@ -8,6 +8,7 @@ import { useToast } from "../context/ToastContext";
 import { assetStatusLabels, assetStatusColors, assets as mockAssets, normalizeAsset } from "../data/mock";
 import Layout from "../components/Layout";
 import BookingCard from "../components/BookingCard";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const tabs = [
   { key: "orders", label: "الطلبات", icon: ClipboardList },
@@ -102,6 +103,7 @@ function AssetsTab() {
   const [assets, setAssets] = useState([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const fetchAssets = () => {
     if (user) {
@@ -122,11 +124,12 @@ function AssetsTab() {
     } catch { }
   };
 
-  const handleDelete = async (asset) => {
-    if (!window.confirm(`هل أنت متأكد من حذف "${asset.title}"؟`)) return;
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await api.delete(`/assets/${asset.id}`);
+      await api.delete(`/assets/${deleteTarget.id}`);
       showToast("تم حذف الأصل بنجاح", "success");
+      setDeleteTarget(null);
       fetchAssets();
     } catch {
       showToast("فشل حذف الأصل", "error");
@@ -229,7 +232,7 @@ function AssetsTab() {
                   <Edit3 className="w-3 h-3" />
                   تعديل
                 </Link>
-                <button onClick={() => handleDelete(asset)}
+                <button onClick={() => setDeleteTarget(asset)}
                   className="flex-1 flex items-center justify-center gap-1 py-2 text-[11px] font-medium text-red-400 hover:bg-red-50 transition-all active:scale-[0.97]">
                   <Trash2 className="w-3 h-3" />
                   حذف
@@ -239,6 +242,15 @@ function AssetsTab() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog open={!!deleteTarget}
+        title="حذف الأصل"
+        message={deleteTarget ? `هل أنت متأكد من حذف "${deleteTarget.title}"؟` : ""}
+        confirmLabel="حذف"
+        cancelLabel="إلغاء"
+        danger
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)} />
     </div>
   );
 }

@@ -36,6 +36,47 @@ router.get("/users", (req, res) => {
   res.json({ success: true, data: users });
 });
 
+router.post("/users", (req, res) => {
+  const { name, phone, role } = req.body;
+  if (!name || !phone || !role) {
+    return res.status(400).json({ success: false, error: { code: "VALIDATION_ERROR", message: "الاسم ورقم الجوال والدور مطلوبون" } });
+  }
+  if (!["tenant", "lessor", "admin"].includes(role)) {
+    return res.status(400).json({ success: false, error: { code: "VALIDATION_ERROR", message: "دور غير صالح" } });
+  }
+
+  const existing = UserModel.findByPhone(phone);
+  if (existing) {
+    return res.status(409).json({ success: false, error: { code: "CONFLICT", message: "رقم الجوال مستخدم بالفعل" } });
+  }
+
+  const user = UserModel.create(req.body);
+  res.status(201).json({ success: true, data: user });
+});
+
+router.put("/users/:id", (req, res) => {
+  const existing = UserModel.findById(req.params.id);
+  if (!existing) return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "المستخدم غير موجود" } });
+
+  if (req.body.phone) {
+    const phoneUser = UserModel.findByPhone(req.body.phone);
+    if (phoneUser && phoneUser.id !== req.params.id) {
+      return res.status(409).json({ success: false, error: { code: "CONFLICT", message: "رقم الجوال مستخدم بالفعل" } });
+    }
+  }
+
+  const user = UserModel.updateUser(req.params.id, req.body);
+  res.json({ success: true, data: user });
+});
+
+router.delete("/users/:id", (req, res) => {
+  const existing = UserModel.findById(req.params.id);
+  if (!existing) return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "المستخدم غير موجود" } });
+
+  UserModel.deleteUser(req.params.id);
+  res.json({ success: true, data: { id: req.params.id } });
+});
+
 router.get("/users/:id", (req, res) => {
   const user = UserModel.findById(req.params.id);
   if (!user) return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "المستخدم غير موجود" } });
