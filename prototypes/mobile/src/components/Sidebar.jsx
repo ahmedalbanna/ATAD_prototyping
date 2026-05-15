@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Package, ClipboardList, User, LayoutDashboard, X } from "lucide-react";
+import { Home, Package, ClipboardList, User, LayoutDashboard, Wallet, Settings, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const roleLabels = { tenant: "مستأجر", lessor: "مؤجر" };
@@ -12,8 +12,10 @@ export default function Sidebar({ open, onClose }) {
   const navItems = isLessor
     ? [
         { to: "/home", label: "الرئيسية", icon: Home },
-        { to: "/assets", label: "الأصول", icon: Package },
-        { to: "/lessor-dashboard", label: "لوحتي", icon: LayoutDashboard },
+        { to: "/assets", label: "تصفح الأصول", icon: Package },
+        { to: "/lessor-dashboard", label: "إدارة الطلبات", icon: ClipboardList },
+        { to: "/lessor-assets", label: "إدارة الأصول", icon: Settings },
+        { to: "/lessor-earnings", label: "الأرباح", icon: Wallet },
         { to: "/profile", label: "حسابي", icon: User },
       ]
     : [
