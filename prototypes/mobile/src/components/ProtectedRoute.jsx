@@ -16,7 +16,7 @@ export function TenantRoute({ children }) {
 }
 
 export function AuthRoute({ children }) {
-  const { user } = useAuth();
-  if (user) return <Navigate to="/home" replace />;
+  const { user, defaultRoute } = useAuth();
+  if (user) return <Navigate to={defaultRoute} replace />;
   return children;
 }

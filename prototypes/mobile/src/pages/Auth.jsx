@@ -38,20 +38,21 @@ export default function Auth() {
     e.preventDefault();
     if (otp.length < 4) return;
     try {
-      await verifyOtp(phone, otp, name || undefined);
+      const result = await verifyOtp(phone, otp, mode === "register" ? role : undefined);
+      const targetRole = result?.role || role;
       if (mode === "register") {
-        navigate(role === "lessor" ? "/onboarding/lessor" : "/onboarding/tenant");
+        navigate(targetRole === "lessor" ? "/onboarding/lessor" : "/onboarding/tenant");
       } else {
-        navigate("/home");
+        navigate(targetRole === "lessor" ? "/lessor-dashboard" : "/home");
       }
     } catch (err) {
       showToast(err.message || "رمز التحقق غير صحيح", "error");
     }
   };
 
-  const handleQuickLogin = (u) => {
-    login(u.phone, u.role);
-    navigate("/home");
+  const handleQuickLogin = async (u) => {
+    await login(u.phone, u.role);
+    navigate(u.role === "lessor" ? "/lessor-dashboard" : "/home");
   };
 
   if (step === "otp") {
