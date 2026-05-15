@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Users as UsersIcon, Phone, Plus, Edit3, Trash2, X, Loader } from "lucide-react";
+import { Search, Users as UsersIcon, Phone, Mail, Plus, Edit3, Trash2, X, Loader, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { api } from "../services/apiClient";
@@ -11,11 +11,22 @@ const roleColors = {
   lessor: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
   admin: "bg-purple-50 text-purple-700 ring-1 ring-purple-200",
 };
+const avatarColors = [
+  "from-primary to-primary-dark",
+  "from-blue-500 to-blue-700",
+  "from-emerald-500 to-emerald-700",
+  "from-amber-500 to-amber-700",
+  "from-purple-500 to-purple-700",
+  "from-rose-500 to-rose-700",
+];
 const roles = ["tenant", "lessor", "admin"];
+const PAGE_SIZE = 10;
+const STATS_ICONS = [UsersIcon, UsersIcon, UsersIcon, UsersIcon];
 
 function UserModal({ user, onClose, onSaved }) {
   const [name, setName] = useState(user?.name || "");
   const [phone, setPhone] = useState(user?.phone?.replace("+966", "") || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [role, setRole] = useState(user?.role || "tenant");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -31,9 +42,9 @@ function UserModal({ user, onClose, onSaved }) {
     try {
       const fullPhone = phone.startsWith("+966") ? phone : `+966${phone}`;
       if (user) {
-        await api.put(`/admin/users/${user.id}`, { name, phone: fullPhone, role });
+        await api.put(`/admin/users/${user.id}`, { name, phone: fullPhone, email: email || undefined, role });
       } else {
-        await api.post("/admin/users", { name, phone: fullPhone, role });
+        await api.post("/admin/users", { name, phone: fullPhone, email: email || undefined, role });
       }
       onSaved();
     } catch (err) {
@@ -77,6 +88,13 @@ function UserModal({ user, onClose, onSaved }) {
           </div>
 
           <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">البريد الإلكتروني</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              placeholder="user@example.com"
+              className="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:border-primary focus:outline-none transition-all" />
+          </div>
+
+          <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1.5">الدور</label>
             <div className="grid grid-cols-3 gap-2">
               {roles.map(r => (
@@ -108,6 +126,7 @@ export default function Users() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [page, setPage] = useState(0);
 
   const fetchUsers = () => {
     api.get("/admin/users").then(setUsers).catch(() => {});
@@ -117,7 +136,13 @@ export default function Users() {
 
   const filtered = users
     .filter(u => filterRole === "all" || u.role === filterRole)
-    .filter(u => u.name.includes(search) || u.phone.includes(search));
+    .filter(u => u.name.includes(search) || u.phone.includes(search) || (u.email || "").includes(search));
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const paged = filtered.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+
+  useEffect(() => { setPage(0); }, [search, filterRole]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -138,17 +163,47 @@ export default function Users() {
     setModalOpen(true);
   };
 
+  const stats = [
+    { label: "إجمالي المستخدمين", value: users.length, color: "bg-blue-50 text-blue-600" },
+    { label: "مستأجر", value: users.filter(u => u.role === "tenant").length, color: "bg-emerald-50 text-emerald-600" },
+    { label: "مؤجر", value: users.filter(u => u.role === "lessor").length, color: "bg-amber-50 text-amber-600" },
+    { label: "مدير", value: users.filter(u => u.role === "admin").length, color: "bg-purple-50 text-purple-600" },
+  ];
+
+  const getAvatarColor = (name) => {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return avatarColors[Math.abs(hash) % avatarColors.length];
+  };
+
   return (
     <AdminLayout title="المستخدمين">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {stats.map((s, i) => {
+          const Icon = STATS_ICONS[i];
+          return (
+            <div key={s.label} className="bg-white rounded-xl border border-gray-100/80 p-3 flex items-center gap-3 shadow-sm animate-slide-up" style={{ animationDelay: `${i * 0.04}s` }}>
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${s.color}`}>
+                <Icon className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-lg font-black text-gray-900">{s.value}</p>
+                <p className="text-[10px] text-gray-400 font-medium">{s.label}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       <div className="bg-white rounded-2xl border border-gray-100/80 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
+        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          <div className="relative flex-1 w-full">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="بحث بالاسم أو رقم الجوال..."
+              placeholder="بحث بالاسم أو الجوال أو البريد..."
               className="w-full pr-9 pl-3 p-2.5 border border-gray-200 rounded-xl text-sm focus:border-primary focus:outline-none transition-all" />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {["all", "tenant", "lessor", "admin"].map(r => (
               <button key={r} onClick={() => setFilterRole(r)}
                 className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${
@@ -159,10 +214,10 @@ export default function Users() {
             ))}
           </div>
           <button onClick={openCreate}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-white shadow-sm hover:bg-primary-dark transition-all active:scale-[0.97]">
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-white shadow-sm hover:bg-primary-dark transition-all active:scale-[0.97] shrink-0">
             <Plus className="w-3.5 h-3.5" /> إضافة مستخدم
           </button>
-          <span className="text-xs text-gray-400 self-center bg-gray-50 px-2.5 py-1 rounded-full">{filtered.length} مستخدم</span>
+          <span className="text-xs text-gray-400 self-center bg-gray-50 px-2.5 py-1 rounded-full shrink-0">{filtered.length} مستخدم</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -170,29 +225,36 @@ export default function Users() {
             <thead>
               <tr className="border-b border-gray-50 text-gray-400 text-xs">
                 <th className="text-right p-3 font-semibold">#</th>
-                <th className="text-right p-3 font-semibold"><UsersIcon className="w-3 h-3 inline ml-1" />الاسم</th>
+                <th className="text-right p-3 font-semibold">المستخدم</th>
                 <th className="text-right p-3 font-semibold"><Phone className="w-3 h-3 inline ml-1" />رقم الجوال</th>
+                <th className="text-right p-3 font-semibold"><Mail className="w-3 h-3 inline ml-1" />البريد</th>
                 <th className="text-right p-3 font-semibold">نوع الحساب</th>
-                <th className="text-right p-3 font-semibold">تاريخ التسجيل</th>
+                <th className="text-right p-3 font-semibold"><CalendarDays className="w-3 h-3 inline ml-1" />التسجيل</th>
                 <th className="text-center p-3 font-semibold">إجراءات</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((user, idx) => (
-                <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                  <td className="p-3 text-gray-400 font-mono text-xs">{String(idx + 1).padStart(2, "0")}</td>
+              {paged.map((user, idx) => (
+                <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors animate-slide-up" style={{ animationDelay: `${idx * 0.03}s` }}>
+                  <td className="p-3 text-gray-400 font-mono text-xs">{String(safePage * PAGE_SIZE + idx + 1).padStart(2, "0")}</td>
                   <td className="p-3">
-                    <Link to={`/admin/user/${user.id}`} className="font-medium text-gray-900 hover:text-primary transition-colors">
-                      {user.name}
-                    </Link>
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAvatarColor(user.name)} flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0`}>
+                        {user.name?.[0]}
+                      </div>
+                      <Link to={`/admin/user/${user.id}`} className="font-medium text-gray-900 hover:text-primary transition-colors">
+                        {user.name}
+                      </Link>
+                    </div>
                   </td>
                   <td className="p-3 text-gray-500" dir="ltr">{user.phone}</td>
+                  <td className="p-3 text-gray-400 text-xs max-w-[160px] truncate" dir="ltr">{user.email || "—"}</td>
                   <td className="p-3">
                     <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${roleColors[user.role]}`}>
                       {roleLabels[user.role]}
                     </span>
                   </td>
-                  <td className="p-3 text-gray-400 text-xs">{user.created_at?.slice(0, 10)}</td>
+                  <td className="p-3 text-gray-400 text-xs whitespace-nowrap">{user.created_at?.slice(0, 10)}</td>
                   <td className="p-3">
                     <div className="flex items-center justify-center gap-1">
                       <button onClick={() => openEdit(user)}
@@ -214,9 +276,35 @@ export default function Users() {
         </div>
 
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-gray-400">
-            <UsersIcon className="w-8 h-8 mx-auto mb-2 opacity-40" />
-            <p className="text-sm">لا يوجد مستخدمين</p>
+          <div className="text-center py-16 text-gray-300">
+            <UsersIcon className="w-16 h-16 mx-auto mb-3 opacity-50" />
+            <p className="font-medium text-gray-400">لا يوجد مستخدمين</p>
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-gray-100 flex items-center justify-between">
+            <span className="text-xs text-gray-400">
+              عرض {safePage * PAGE_SIZE + 1}–{Math.min((safePage + 1) * PAGE_SIZE, filtered.length)} من {filtered.length}
+            </span>
+            <div className="flex gap-1">
+              <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={safePage === 0}
+                className="p-2 rounded-xl text-xs border border-gray-200 text-gray-500 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button key={i} onClick={() => setPage(i)}
+                  className={`w-8 h-8 rounded-xl text-xs font-semibold transition-all ${
+                    safePage === i ? "bg-primary text-white shadow-sm" : "text-gray-500 border border-gray-200 hover:border-gray-300"
+                  }`}>
+                  {i + 1}
+                </button>
+              ))}
+              <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={safePage === totalPages - 1}
+                className="p-2 rounded-xl text-xs border border-gray-200 text-gray-500 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
