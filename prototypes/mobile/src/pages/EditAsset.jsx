@@ -1,30 +1,54 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ImagePlus, Tag, FileText, MapPin, ListTree, Save, AlertCircle } from "lucide-react";
+import { ImagePlus, Tag, FileText, MapPin, ListTree, Save } from "lucide-react";
 import Layout from "../components/Layout";
-import { assets, categories } from "../data/mock";
+import { api } from "../services/apiClient";
+import { useToast } from "../context/ToastContext";
+import { categories } from "../data/mock";
+
+const BASE_URL = import.meta.env.VITE_API_URL || "http://185.190.140.93:3001/api/v1";
+const API_HOST = BASE_URL.replace("/api/v1", "");
 
 export default function EditAsset() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const asset = assets.find(a => a.id === Number(id));
-
+  const { showToast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    title: asset?.title || "",
-    description: asset?.description || "",
-    pricePerDay: asset?.pricePerDay?.toString() || "",
-    city: asset?.city || "",
-    category: asset?.category || categories[1],
+    title: "", description: "", pricePerDay: "",
+    city: "", category: categories[1],
   });
+  const [status, setStatus] = useState("available");
   const [errors, setErrors] = useState({});
   const fileRef = useRef(null);
   const [preview, setPreview] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  useEffect(() => {
+    api.get(`/assets/${id}`).then(data => {
+      setForm({
+        title: data.title || "",
+        description: data.description || "",
+        pricePerDay: data.price_per_day?.toString() || "",
+        city: data.city || "",
+        category: data.category || categories[1],
+      });
+      setStatus(data.status || "available");
+      setImageUrl(data.image_url || "");
+    }).catch(() => {
+      showToast("تعذر تحميل بيانات الأصل", "error");
+      navigate(-1);
+    }).finally(() => setLoading(false));
+  }, [id]);
 
   const update = (f, v) => {
     setForm(p => ({ ...p, [f]: v }));
     if (errors[f]) setErrors(p => { const n = { ...p }; delete n[f]; return n; });
   };
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {};
     if (!form.title.trim()) errs.title = "يرجى إدخال عنوان الأصل";
@@ -32,7 +56,43 @@ export default function EditAsset() {
     if (!form.pricePerDay || Number(form.pricePerDay) <= 0) errs.pricePerDay = "يرجى إدخال سعر صحيح";
     if (!form.city.trim()) errs.city = "يرجى اختيار المدينة";
     setErrors(errs);
-    if (Object.keys(errs).length === 0) navigate("/lessor-dashboard");
+    if (Object.keys(errs).length > 0) return;
+
+    setSaving(true);
+    try {
+      let newImageUrl = imageUrl;
+
+      if (selectedFile) {
+        const imgData = new FormData();
+        imgData.append("image", selectedFile);
+        const token = api.getToken();
+        const res = await fetch(`${API_HOST}/api/v1/upload`, {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: imgData,
+        });
+        const imgJson = await res.json();
+        if (imgJson.success) {
+          newImageUrl = `${API_HOST}${imgJson.data.url}`;
+        }
+      }
+
+      await api.put(`/assets/${id}`, {
+        title: form.title,
+        description: form.description,
+        price_per_day: Number(form.pricePerDay),
+        city: form.city,
+        category: form.category,
+        image_url: newImageUrl,
+        status,
+      });
+      showToast("تم حفظ التغييرات بنجاح", "success");
+      navigate("/lessor-dashboard");
+    } catch {
+      showToast("فشل حفظ التغييرات", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const assetStatuses = [
@@ -40,15 +100,11 @@ export default function EditAsset() {
     { value: "rented", label: "مؤجر" },
     { value: "maintenance", label: "صيانة" },
   ];
-  const [status, setStatus] = useState(asset?.status || "available");
 
-  if (!asset) {
+  if (loading) {
     return (
-      <Layout title="غير موجود" onBack={() => navigate(-1)}>
-        <div className="text-center py-20 text-gray-300">
-          <AlertCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
-          <p className="font-bold text-gray-400">الأصل غير موجود</p>
-        </div>
+      <Layout title="تعديل الأصل" onBack={() => navigate(-1)}>
+        <div className="shimmer rounded-2xl h-64" />
       </Layout>
     );
   }
@@ -56,15 +112,15 @@ export default function EditAsset() {
   return (
     <Layout title="تعديل الأصل" onBack={() => navigate(-1)}>
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Image */}
         <div className="bg-white rounded-2xl border border-gray-100/80 overflow-hidden shadow-sm">
-          <img src={preview || asset.image} alt={asset.title}
+          <img src={preview || imageUrl}
             className="w-full aspect-[16/9] object-cover bg-gray-100" />
           <div className="p-4 border-t border-gray-100">
             <input type="file" accept="image/*" ref={fileRef} className="hidden"
               onChange={e => {
                 const file = e.target.files?.[0];
                 if (file) {
+                  setSelectedFile(file);
                   const reader = new FileReader();
                   reader.onload = ev => setPreview(ev.target.result);
                   reader.readAsDataURL(file);
@@ -80,7 +136,6 @@ export default function EditAsset() {
           </div>
         </div>
 
-        {/* Details */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100/80 space-y-4 shadow-sm">
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1.5 flex items-center gap-1.5">
@@ -118,6 +173,7 @@ export default function EditAsset() {
                 <MapPin className="w-3.5 h-3.5 text-primary" /> المدينة
               </label>
               <input type="text" value={form.city} onChange={e => update("city", e.target.value)}
+                placeholder="الرياض"
                 className={`w-full p-3 border rounded-xl focus:outline-none transition-all text-sm ${
                   errors.city ? "border-red-300 bg-red-50/50 focus:border-red-400" : "border-gray-200 bg-gray-50/50 focus:border-primary"
                 }`} />
@@ -155,10 +211,10 @@ export default function EditAsset() {
         {Object.keys(errors).length > 0 && (
           <p className="text-xs text-red-500 text-center">يرجى تصحيح الحقول المظللة باللون الأحمر</p>
         )}
-        <button type="submit"
-          className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold py-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 active:scale-[0.98] flex items-center justify-center gap-2">
+        <button type="submit" disabled={saving}
+          className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold py-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
           <Save className="w-5 h-5" />
-          حفظ التغييرات
+          {saving ? "جاري الحفظ..." : "حفظ التغييرات"}
         </button>
       </form>
     </Layout>

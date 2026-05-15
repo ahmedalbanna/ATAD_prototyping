@@ -12,16 +12,20 @@ import paymentRoutes from "./routes/payments.js";
 import ratingRoutes from "./routes/ratings.js";
 import adminRoutes from "./routes/admin.js";
 import notificationRoutes from "./routes/notifications.js";
+import uploadRoutes from "./routes/upload.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors({ origin: (process.env.CORS_ORIGIN || "").split(",") }));
 app.use(requestLogger);
 app.use(rateLimiter);
 app.use(express.json());
+
+// Static files (uploads)
+app.use("/uploads", express.static("public/uploads"));
 
 // Health check
 app.get("/api/v1/health", (req, res) => {
@@ -36,6 +40,7 @@ app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/ratings", ratingRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/upload", uploadRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -1,22 +1,28 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImagePlus, Tag, FileText, MapPin, ListTree } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
+import { api } from "../services/apiClient";
+import { useToast } from "../context/ToastContext";
 import { categories } from "../data/mock";
+
+const BASE_URL = import.meta.env.VITE_API_URL || "http://185.190.140.93:3001/api/v1";
+const API_HOST = BASE_URL.replace("/api/v1", "");
 
 export default function AddAsset() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { showToast } = useToast();
   const [form, setForm] = useState({
     title: "", description: "", pricePerDay: "",
     city: "", category: categories[1],
   });
   const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
   const fileRef = useRef(null);
   const [preview, setPreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {};
     if (!form.title.trim()) errs.title = "يرجى إدخال عنوان الأصل";
@@ -24,8 +30,45 @@ export default function AddAsset() {
     if (!form.pricePerDay || Number(form.pricePerDay) <= 0) errs.pricePerDay = "يرجى إدخال سعر صحيح";
     if (!form.city.trim()) errs.city = "يرجى اختيار المدينة";
     setErrors(errs);
-    if (Object.keys(errs).length === 0) navigate("/lessor-dashboard");
+    if (Object.keys(errs).length > 0) return;
+
+    setSaving(true);
+    try {
+      let imageUrl = "";
+
+      if (selectedFile) {
+        const imgData = new FormData();
+        imgData.append("image", selectedFile);
+        const token = api.getToken();
+        const res = await fetch(`${API_HOST}/api/v1/upload`, {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: imgData,
+        });
+        const imgJson = await res.json();
+        if (imgJson.success) {
+          imageUrl = `${API_HOST}${imgJson.data.url}`;
+        }
+      }
+
+      await api.post("/assets", {
+        title: form.title,
+        description: form.description,
+        price_per_day: Number(form.pricePerDay),
+        city: form.city,
+        category: form.category,
+        image_url: imageUrl,
+      });
+
+      showToast("تم إضافة الأصل بنجاح", "success");
+      navigate("/lessor-dashboard");
+    } catch (err) {
+      showToast(err.message || "فشل إضافة الأصل", "error");
+    } finally {
+      setSaving(false);
+    }
   };
+
   const update = (f, v) => {
     setForm(p => ({ ...p, [f]: v }));
     if (errors[f]) setErrors(p => { const n = { ...p }; delete n[f]; return n; });
@@ -34,13 +77,13 @@ export default function AddAsset() {
   return (
     <Layout title="إضافة أصل" onBack={() => navigate(-1)}>
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Image upload */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100/80">
           <label className="block text-sm font-semibold text-gray-700 mb-3">صورة الأصل</label>
           <input type="file" accept="image/*" ref={fileRef} className="hidden"
             onChange={e => {
               const file = e.target.files?.[0];
               if (file) {
+                setSelectedFile(file);
                 const reader = new FileReader();
                 reader.onload = ev => setPreview(ev.target.result);
                 reader.readAsDataURL(file);
@@ -62,7 +105,6 @@ export default function AddAsset() {
           </div>
         </div>
 
-        {/* Details */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100/80 space-y-4">
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1.5 flex items-center gap-1.5">
@@ -101,7 +143,7 @@ export default function AddAsset() {
                 <MapPin className="w-3.5 h-3.5 text-primary" /> المدينة
               </label>
               <input type="text" value={form.city} onChange={e => update("city", e.target.value)}
-                placeholder="صنعاء"
+                placeholder="الرياض"
                 className={`w-full p-3 border rounded-xl focus:outline-none transition-all text-sm ${
                   errors.city ? "border-red-300 bg-red-50/50 focus:border-red-400" : "border-gray-200 bg-gray-50/50 focus:border-primary"
                 }`} />
@@ -124,10 +166,10 @@ export default function AddAsset() {
         {Object.keys(errors).length > 0 && (
           <p className="text-xs text-red-500 text-center">يرجى تصحيح الحقول المظللة باللون الأحمر</p>
         )}
-        <button type="submit"
-          className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold py-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 active:scale-[0.98] flex items-center justify-center gap-2">
+        <button type="submit" disabled={saving}
+          className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold py-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
           <ImagePlus className="w-5 h-5" />
-          إضافة الأصل
+          {saving ? "جاري الإضافة..." : "إضافة الأصل"}
         </button>
       </form>
     </Layout>

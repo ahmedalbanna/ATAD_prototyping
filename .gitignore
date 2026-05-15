@@ -9,3 +9,4 @@ coverage/
 *.db-wal
 .env*
 !.env.example
+prototypes/api/public/uploads/*

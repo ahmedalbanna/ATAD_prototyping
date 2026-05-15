@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { User, ClipboardList, Package, FileText, Info, LogOut, ChevronLeft, Bell, Repeat, LayoutGrid, Wallet, Clock, Edit3 } from "lucide-react";
+import { ClipboardList, FileText, Info, LogOut, ChevronLeft, Repeat, Edit3, Compass } from "lucide-react";
 import Layout from "../components/Layout";
 import { useAuth } from "../context/AuthContext";
 
@@ -14,15 +14,8 @@ export default function Profile() {
 
   const menuItems = [
     { label: "تعديل البيانات", icon: Edit3, desc: "الاسم، رقم الجوال", to: "/edit-profile" },
-    ...(isLessor ? [
-      { label: "لوحة المؤجر", icon: LayoutGrid, desc: "إدارة أصولك وطلباتك", to: "/lessor-dashboard" },
-      { label: "إدارة الأصول", icon: Package, desc: "عرض وتعديل الأصول", to: "/lessor-assets" },
-      { label: "الأرباح", icon: Wallet, desc: "متابعة الإيرادات", to: "/lessor-earnings" },
-    ] : [
-      { label: "طلباتي", icon: ClipboardList, desc: "جميع طلبات التأجير", to: "/bookings" },
-      { label: "سجل التأجير", icon: Clock, desc: "التأجيرات السابقة", to: "/rental-history" },
-    ]),
-    { label: "الإشعارات", icon: Bell, desc: "آخر التحديثات", to: "/notifications" },
+    { label: "دليل الاستخدام", icon: Compass, desc: "شرح التطبيق والبدء السريع", to: isLessor ? "/onboarding/lessor" : "/onboarding/tenant" },
+    { label: "طلباتي", icon: ClipboardList, desc: "جميع طلبات التأجير", to: "/bookings" },
     { label: "الشروط والأحكام", icon: FileText, desc: "سياسة الاستخدام", to: "/terms" },
     { label: "عن التطبيق", icon: Info, desc: "الإصدار 1.0.0" },
   ];

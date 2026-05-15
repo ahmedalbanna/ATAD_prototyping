@@ -89,7 +89,7 @@ export function update(id, data) {
   const params = [];
 
   for (const [key, value] of Object.entries(data)) {
-    if (["title", "description", "category", "price_per_day", "city", "image_url"].includes(key)) {
+    if (["title", "description", "category", "price_per_day", "city", "image_url", "status"].includes(key)) {
       fields.push(`${key} = ?`);
       params.push(value);
     }

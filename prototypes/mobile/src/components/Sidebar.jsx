@@ -1,14 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Package, ClipboardList, User, Bell, LayoutDashboard, X } from "lucide-react";
+import { Home, Package, ClipboardList, User, LayoutDashboard, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { useBookings } from "../context/BookingContext";
 
 const roleLabels = { tenant: "مستأجر", lessor: "مؤجر" };
 
 export default function Sidebar({ open, onClose }) {
   const location = useLocation();
   const { user, isLessor } = useAuth();
-  const { unreadCount } = useBookings();
   const initial = user?.name?.[0] || "ز";
 
   const navItems = isLessor
@@ -62,14 +60,6 @@ export default function Sidebar({ open, onClose }) {
               </Link>
             );
           })}
-          <Link to="/notifications" onClick={onClose}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
-            <Bell className="w-5 h-5 text-gray-400" />
-            الإشعارات
-            {unreadCount > 0 && (
-              <span className="mr-auto bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">{unreadCount}</span>
-            )}
-          </Link>
         </nav>
         <div className="pt-4 border-t border-gray-100 space-y-1.5">
           <Link to="/terms" onClick={onClose}
