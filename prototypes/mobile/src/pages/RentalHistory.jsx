@@ -8,8 +8,8 @@ import { statusLabels, statusColors, ratings as mockRatings } from "../data/mock
 export default function RentalHistory() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
-  const { bookings } = useBookings();
-  const history = bookings.filter(b => ["completed", "expired", "rejected"].includes(b.status));
+  const { asTenant } = useBookings();
+  const history = asTenant.filter(b => ["completed", "expired", "rejected"].includes(b.status));
   const filtered = filter === "all" ? history : history.filter(b => b.status === filter);
 
   const getRating = (bookingId) => mockRatings.find(r => r.bookingId === bookingId);

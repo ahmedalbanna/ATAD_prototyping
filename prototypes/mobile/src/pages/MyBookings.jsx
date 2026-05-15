@@ -14,13 +14,11 @@ const tabs = [
 ];
 
 export default function MyBookings() {
-  const { user, isLessor } = useAuth();
-  const { bookings } = useBookings();
+  const { isLessor } = useAuth();
+  const { asTenant, asLessor } = useBookings();
   const [activeTab, setActiveTab] = useState("all");
 
-  const myBookings = isLessor
-    ? bookings
-    : bookings.filter(b => b.tenant?.id === user?.id);
+  const myBookings = isLessor ? asLessor : asTenant;
 
   const filtered = activeTab === "all"
     ? myBookings : myBookings.filter(b => b.status === activeTab);

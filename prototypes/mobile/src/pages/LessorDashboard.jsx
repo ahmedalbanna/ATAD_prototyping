@@ -1,27 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { CheckCircle, XCircle, ClipboardList } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
 import { useBookings } from "../context/BookingContext";
-import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
 import BookingCard from "../components/BookingCard";
 
 export default function LessorDashboard() {
-  const { user } = useAuth();
-  const { bookings, updateStatus } = useBookings();
-  const [myAssetIds, setMyAssetIds] = useState([]);
+  const { asLessor, updateStatus } = useBookings();
   const [bookingFilter, setBookingFilter] = useState("all");
 
-  useEffect(() => {
-    if (user) {
-      api.get(`/assets?owner_id=${user.id}`).then(data => {
-        const assets = data.data || data;
-        setMyAssetIds(assets.map(a => a.id));
-      }).catch(() => {});
-    }
-  }, [user]);
-
-  const myBookings = bookings.filter(b => myAssetIds.includes(b.asset?.id));
+  const myBookings = asLessor;
   const pendingCount = myBookings.filter(b => b.status === "pending").length;
 
   const bookingStatuses = [

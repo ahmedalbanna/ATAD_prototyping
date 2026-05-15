@@ -57,10 +57,7 @@ export default function BookingForm() {
         assetId: asset.id,
         startDate,
         endDate,
-        assetTitle: asset.title,
-        assetImage: asset.image_url,
-        tenantId: user?.id,
-        tenantName: user?.name,
+        totalPrice: total,
       });
       setTimeout(() => navigate("/bookings", { replace: true }), 800);
     } catch (err) {

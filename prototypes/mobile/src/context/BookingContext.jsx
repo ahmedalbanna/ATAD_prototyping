@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { api } from "../services/apiClient";
 import { useAuth } from "./AuthContext";
 
@@ -8,13 +8,32 @@ export function BookingProvider({ children }) {
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [canceling, setCanceling] = useState(false);
+  const [assetOwnerIds, setAssetOwnerIds] = useState([]);
+  const notifiedRef = useRef(new Set());
+  const prevUserIdRef = useRef(null);
+
+  useEffect(() => {
+    if (user) fetchMyAssetIds();
+  }, [user]);
+
+  const fetchMyAssetIds = async () => {
+    try {
+      const data = await api.get(`/assets?owner_id=${user.id}`);
+      const list = Array.isArray(data) ? data : data?.data || [];
+      setAssetOwnerIds(list.map(a => a.id));
+    } catch {
+      setAssetOwnerIds([]);
+    }
+  };
 
   const fetchBookings = useCallback(async () => {
     if (!user) { setBookings([]); return; }
     try {
       const data = await api.get("/bookings");
-      setBookings(Array.isArray(data) ? data : []);
+      setBookings(Array.isArray(data) ? data : data?.data || []);
     } catch {
       // API unavailable
     }
@@ -24,7 +43,20 @@ export function BookingProvider({ children }) {
     if (!user) { setNotifications([]); return; }
     try {
       const data = await api.get("/notifications");
-      setNotifications(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : data?.data || [];
+      setNotifications(list);
+
+      if (prevUserIdRef.current !== user.id) {
+        notifiedRef.current.clear();
+        prevUserIdRef.current = user.id;
+      }
+
+      list.forEach(n => {
+        const key = `${n.id}-${n.is_read}`;
+        if (!n.is_read && !notifiedRef.current.has(key)) {
+          notifiedRef.current.add(key);
+        }
+      });
     } catch {
       // API unavailable
     }
@@ -33,60 +65,61 @@ export function BookingProvider({ children }) {
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
   useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
 
-  // Poll every 5s
   useEffect(() => {
     if (!user) return;
     const id = setInterval(() => { fetchBookings(); fetchNotifications(); }, 5000);
     return () => clearInterval(id);
   }, [user, fetchBookings, fetchNotifications]);
 
-  const createBooking = useCallback(async ({ assetId, startDate, endDate }) => {
-    setLoading(true);
+  const createBooking = useCallback(async ({ assetId, startDate, endDate, totalPrice }) => {
+    setCreating(true);
     try {
-      const booking = await api.post("/bookings", { asset_id: assetId, start_date: startDate, end_date: endDate });
+      const body = { asset_id: assetId, start_date: startDate, end_date: endDate };
+      if (totalPrice != null) body.total_price = totalPrice;
+      const booking = await api.post("/bookings", body);
       setBookings(prev => [booking, ...prev]);
       return booking;
     } finally {
-      setLoading(false);
+      setCreating(false);
     }
   }, []);
 
   const updateStatus = useCallback(async (bookingId, newStatus) => {
-    setLoading(true);
+    setUpdating(true);
     try {
       const booking = await api.patch(`/bookings/${bookingId}/status`, { status: newStatus });
-      setBookings(prev => prev.map(b => b.id === bookingId ? booking : b));
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, ...booking, status: newStatus } : b));
       return booking;
     } finally {
-      setLoading(false);
+      setUpdating(false);
     }
   }, []);
 
+  const completeBooking = useCallback(async (bookingId) => {
+    return updateStatus(bookingId, "completed");
+  }, [updateStatus]);
+
   const cancelBooking = useCallback(async (bookingId) => {
-    setLoading(true);
+    setCanceling(true);
     try {
       const booking = await api.post(`/bookings/${bookingId}/cancel`);
-      setBookings(prev => prev.map(b => b.id === bookingId ? booking : b));
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, ...booking, status: "cancelled" } : b));
       return booking;
     } finally {
-      setLoading(false);
+      setCanceling(false);
     }
   }, []);
 
   const setPaymentStatus = useCallback(async (bookingId) => {
-    setLoading(true);
+    setUpdating(true);
     try {
       const result = await api.post("/payments", { booking_id: bookingId, method: "mock" });
       await fetchBookings();
       return result;
     } finally {
-      setLoading(false);
+      setUpdating(false);
     }
   }, [fetchBookings]);
-
-  const completeBooking = useCallback(async (bookingId) => {
-    return updateStatus(bookingId, "completed");
-  }, [updateStatus]);
 
   const markNotificationRead = useCallback(async (id) => {
     try {
@@ -104,10 +137,15 @@ export function BookingProvider({ children }) {
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
+  const asTenant = bookings.filter(b => b.tenant?.id === user?.id);
+  const asLessor = bookings.filter(b => assetOwnerIds.includes(b.asset?.id));
+
   return (
     <BookingContext.Provider value={{
-      bookings, loading, fetchBookings,
-      createBooking, updateStatus, setPaymentStatus, cancelBooking, completeBooking,
+      bookings, creating, updating, canceling,
+      asTenant, asLessor,
+      fetchBookings,
+      createBooking, updateStatus, completeBooking, setPaymentStatus, cancelBooking,
       notifications, unreadCount, markNotificationRead, markAllNotificationsRead,
     }}>
       {children}
