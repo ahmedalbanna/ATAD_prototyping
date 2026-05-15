@@ -125,7 +125,8 @@ router.get("/bookings/:id", (req, res) => {
   if (!booking) return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "الحجز غير موجود" } });
 
   const history = BookingModel.getStatusHistory(req.params.id);
-  res.json({ success: true, data: { ...booking, status_history: history } });
+  const payments = query("SELECT * FROM payments WHERE booking_id=? ORDER BY paid_at DESC", [req.params.id]).rows;
+  res.json({ success: true, data: { ...booking, status_history: history, payments } });
 });
 
 router.patch("/bookings/:id/status", (req, res, next) => {

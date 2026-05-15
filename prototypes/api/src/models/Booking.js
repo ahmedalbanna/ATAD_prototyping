@@ -6,10 +6,11 @@ export const BOOKING_STATUSES = ["pending", "approved", "rejected", "active", "c
 export function findAll(filters = {}) {
   let sql = `
     SELECT b.*, a.title AS asset_title, a.image_url AS asset_image,
-           u.name AS tenant_name
+           u.name AS tenant_name, o.name AS owner_name
     FROM bookings b
     JOIN assets a ON b.asset_id = a.id
     JOIN users u ON b.tenant_id = u.id
+    JOIN users o ON a.owner_id = o.id
     WHERE 1=1
   `;
   const params = [];
@@ -46,10 +47,13 @@ export function findAll(filters = {}) {
 export function findById(id) {
   const sql = `
     SELECT b.*, a.title AS asset_title, a.image_url AS asset_image, a.description AS asset_description,
-           u.name AS tenant_name
+           a.price_per_day AS asset_price, a.city AS asset_city,
+           u.name AS tenant_name, u.phone AS tenant_phone,
+           o.name AS owner_name, o.phone AS owner_phone
     FROM bookings b
     JOIN assets a ON b.asset_id = a.id
     JOIN users u ON b.tenant_id = u.id
+    JOIN users o ON a.owner_id = o.id
     WHERE b.id = ?
   `;
   const result = query(sql, [id]);
