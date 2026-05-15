@@ -3,6 +3,7 @@ import { authenticate, requireRole } from "../middleware/auth.js";
 import { query } from "../config/database.js";
 import * as BookingModel from "../models/Booking.js";
 import * as UserModel from "../models/User.js";
+import * as AssetModel from "../models/Asset.js";
 import * as PaymentService from "../services/payment.js";
 
 const router = Router();
@@ -106,12 +107,43 @@ router.get("/assets", (req, res) => {
   res.json({ success: true, data: query(sql, params).rows });
 });
 
+router.post("/assets", (req, res) => {
+  const { title, owner_id, category, price_per_day, city, description, image_url } = req.body;
+  if (!title || !owner_id || !price_per_day || !city) {
+    return res.status(400).json({ success: false, error: { code: "VALIDATION_ERROR", message: "العنوان والمالك والسعر والمدينة مطلوبون" } });
+  }
+  const asset = AssetModel.create({ title, owner_id, category, price_per_day: parseFloat(price_per_day), city, description, image_url });
+  res.status(201).json({ success: true, data: asset });
+});
+
+router.put("/assets/:id", (req, res) => {
+  const existing = AssetModel.findById(req.params.id);
+  if (!existing) return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "الأصل غير موجود" } });
+
+  const asset = AssetModel.update(req.params.id, req.body);
+  res.json({ success: true, data: asset });
+});
+
+router.delete("/assets/:id", (req, res) => {
+  const existing = AssetModel.findById(req.params.id);
+  if (!existing) return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "الأصل غير موجود" } });
+
+  AssetModel.remove(req.params.id, existing.owner_id);
+  res.json({ success: true, data: { id: req.params.id } });
+});
+
 router.get("/assets/:id", (req, res) => {
-  const asset = query("SELECT a.*, u.name AS owner_name FROM assets a JOIN users u ON a.owner_id=u.id WHERE a.id=?", [req.params.id]).rows[0];
+  const asset = query("SELECT a.*, u.name AS owner_name, u.phone AS owner_phone FROM assets a JOIN users u ON a.owner_id=u.id WHERE a.id=?", [req.params.id]).rows[0];
   if (!asset) return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "الأصل غير موجود" } });
 
   const bookings = query("SELECT b.*, u.name AS tenant_name FROM bookings b JOIN users u ON b.tenant_id=u.id WHERE b.asset_id=? ORDER BY b.created_at DESC", [req.params.id]).rows;
-  res.json({ success: true, data: { ...asset, bookings } });
+  const revenue = query("SELECT COALESCE(SUM(p.amount),0) AS total FROM payments p JOIN bookings b ON p.booking_id=b.id WHERE b.asset_id=? AND p.status='paid'", [req.params.id]).rows[0];
+  const bookingStats = query(
+    "SELECT status, COUNT(*) AS count FROM bookings WHERE asset_id=? GROUP BY status",
+    [req.params.id]
+  ).rows;
+
+  res.json({ success: true, data: { ...asset, bookings, revenue: parseFloat(revenue.total), booking_stats: bookingStats } });
 });
 
 router.get("/bookings", (req, res) => {
