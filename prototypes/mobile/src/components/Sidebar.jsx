@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Package, ClipboardList, User, LayoutDashboard, Wallet, Settings, X } from "lucide-react";
+import { Home, Package, ClipboardList, User, LayoutDashboard, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const roleLabels = { tenant: "مستأجر", lessor: "مؤجر" };
@@ -13,9 +13,7 @@ export default function Sidebar({ open, onClose }) {
     ? [
         { to: "/home", label: "الرئيسية", icon: Home },
         { to: "/assets", label: "تصفح الأصول", icon: Package },
-        { to: "/lessor-dashboard", label: "إدارة الطلبات", icon: ClipboardList },
-        { to: "/lessor-assets", label: "إدارة الأصول", icon: Settings },
-        { to: "/lessor-earnings", label: "الأرباح", icon: Wallet },
+        { to: "/lessor-dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
         { to: "/profile", label: "حسابي", icon: User },
       ]
     : [
@@ -30,19 +28,20 @@ export default function Sidebar({ open, onClose }) {
   return (
     <div className="fixed inset-0 z-40 flex">
       <div className="w-64 bg-white shadow-2xl h-full p-4 flex flex-col">
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-bold text-sm shadow-md">
-              {initial}
-            </div>
-            <div>
-              <p className="font-bold text-sm text-gray-900">{user?.name || "زائر"}</p>
-              <p className="text-xs text-gray-400">{user ? roleLabels[user.role] : "زائر"}</p>
-            </div>
-          </div>
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
+          <img src="/Logo-Red.svg" alt="عتاد" className="h-8 w-auto" />
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 transition-all hover:rotate-90">
             <X className="w-5 h-5" />
           </button>
+        </div>
+        <div className="flex items-center gap-3 pb-3 mb-3 border-b border-gray-100">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-bold text-sm shadow-md">
+            {initial}
+          </div>
+          <div>
+            <p className="font-bold text-sm text-gray-900">{user?.name || "زائر"}</p>
+            <p className="text-xs text-gray-400">{user ? roleLabels[user.role] : "زائر"}</p>
+          </div>
         </div>
         <nav className="space-y-0.5 flex-1">
           {navItems.map(item => {

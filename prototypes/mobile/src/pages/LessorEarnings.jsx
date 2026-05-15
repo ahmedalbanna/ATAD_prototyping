@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wallet, TrendingUp, CalendarDays, CheckCircle, Clock } from "lucide-react";
+import { Wallet, CalendarDays, CheckCircle, Clock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
@@ -15,7 +15,7 @@ export default function LessorEarnings() {
     if (user) api.get(`/assets?owner_id=${user.id}`).then(assets => {
       // For now, use the admin revenue endpoint to get transaction data
       // In production, there would be a specific lessor earnings endpoint
-    }).catch(() => {});
+    }).catch(() => { });
   }, [user]);
 
   const earned = transactions.filter(t => t.status === "completed");

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ClipboardList, FileText, Info, LogOut, ChevronLeft, Repeat, Wallet, Settings, Edit3, Compass } from "lucide-react";
+import { ClipboardList, FileText, Info, LogOut, ChevronLeft, Wallet, Settings, Edit3, Compass } from "lucide-react";
 import Layout from "../components/Layout";
 import { useAuth } from "../context/AuthContext";
 
@@ -7,10 +7,7 @@ const roleLabels = { tenant: "مستأجر", lessor: "مؤجر" };
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, logout, switchUser, allUsers, isLessor, isRealAccount } = useAuth();
-
-  const otherRoleUsers = allUsers.filter(u => u.role !== user?.role);
-  const sameRoleUsers = allUsers.filter(u => u.role === user?.role && u.id !== user?.id);
+  const { user, logout, isLessor } = useAuth();
 
   const menuItems = isLessor
     ? [
@@ -50,58 +47,6 @@ export default function Profile() {
           </span>
         </div>
       </div>
-
-      {/* Quick switch - same role */}
-      {!isRealAccount && sameRoleUsers.length > 0 && (
-        <div className="bg-white rounded-2xl p-4 border border-gray-100/80 shadow-sm mb-4 animate-slide-up">
-          <div className="flex items-center gap-2 mb-2.5">
-            <Repeat className="w-4 h-4 text-primary" />
-            <h3 className="font-bold text-xs text-gray-900">تبديل {roleLabels[user.role]}</h3>
-          </div>
-          <div className="space-y-1">
-            {sameRoleUsers.map(u => (
-              <button key={u.id} onClick={() => { switchUser(u); }}
-                className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-gray-50 transition-all text-right group">
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 shrink-0 group-hover:bg-primary/10 group-hover:text-primary transition-all">
-                  {u.name[0]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{u.name}</p>
-                  <p className="text-[10px] text-gray-400" dir="ltr">+966 {u.phone}</p>
-                </div>
-                <ChevronLeft className="w-3 h-3 text-gray-300 shrink-0" />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Switch to other role */}
-      {!isRealAccount && otherRoleUsers.length > 0 && (
-        <div className="bg-white rounded-2xl p-4 border border-gray-100/80 shadow-sm mb-4 animate-slide-up stagger-1">
-          <div className="flex items-center gap-2 mb-2.5">
-            <Repeat className="w-4 h-4 text-amber-500" />
-            <h3 className="font-bold text-xs text-gray-900">تجربة دور آخر</h3>
-          </div>
-          <div className="space-y-1">
-            {otherRoleUsers.map(u => (
-              <button key={u.id} onClick={() => { switchUser(u); }}
-                className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-amber-50 transition-all text-right group border border-dashed border-transparent hover:border-amber-200">
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 shrink-0 group-hover:bg-amber-100 group-hover:text-amber-700 transition-all">
-                  {u.name[0]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{u.name}</p>
-                  <p className="text-[10px] text-gray-400">{roleLabels[u.role]} • +966 {u.phone}</p>
-                </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium shrink-0">
-                  جرب
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Menu */}
       <div className="space-y-2 animate-slide-up stagger-2">

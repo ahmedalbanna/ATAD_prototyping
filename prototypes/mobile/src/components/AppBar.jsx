@@ -16,9 +16,10 @@ export default function AppBar({ title, onBack, onMenuOpen }) {
           <Menu className="w-5 h-5" />
         </button>
       )}
-      <h1 className="text-lg font-bold font-heading flex-1 text-gray-900">
-        {title || "عتاد"}
-      </h1>
+      <div className="flex-1 flex items-center gap-2">
+        <img src="/Logo-Red.svg" alt="عتاد" className="h-7 w-auto" />
+        {title && <h1 className="text-lg font-bold font-heading text-gray-900">{title}</h1>}
+      </div>
       <Link to="/notifications"
         className="relative p-1.5 rounded-xl transition-all hover:scale-110 active:scale-95 text-gray-400 hover:bg-gray-100">
         <Bell className="w-5 h-5" />
