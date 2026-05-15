@@ -54,4 +54,14 @@ router.patch("/:id/status", authenticate, requireRole("lessor"), async (req, res
   }
 });
 
+// Delete asset (owner only)
+router.delete("/:id", authenticate, requireRole("lessor"), async (req, res, next) => {
+  try {
+    const result = await AssetService.deleteAsset(req.params.id, req.user.id);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

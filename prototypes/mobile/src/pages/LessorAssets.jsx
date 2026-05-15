@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Plus, Search, Edit3 } from "lucide-react";
+import { Plus, Search, Edit3, Trash2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/apiClient";
+import { useToast } from "../context/ToastContext";
 import Layout from "../components/Layout";
 import { assetStatusLabels, assetStatusColors, assets as mockAssets, normalizeAsset } from "../data/mock";
 
 export default function LessorAssets() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [assets, setAssets] = useState([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -30,6 +32,17 @@ export default function LessorAssets() {
       await api.patch(`/assets/${assetId}/status`, { status: newStatus });
       fetchAssets();
     } catch {}
+  };
+
+  const handleDelete = async (asset) => {
+    if (!window.confirm(`هل أنت متأكد من حذف "${asset.title}"؟`)) return;
+    try {
+      await api.delete(`/assets/${asset.id}`);
+      showToast("تم حذف الأصل بنجاح", "success");
+      fetchAssets();
+    } catch {
+      showToast("فشل حذف الأصل", "error");
+    }
   };
 
   const myAssets = assets
@@ -129,6 +142,11 @@ export default function LessorAssets() {
                   <Edit3 className="w-3 h-3" />
                   تعديل
                 </Link>
+                <button onClick={() => handleDelete(asset)}
+                  className="flex-1 flex items-center justify-center gap-1 py-2 text-[11px] font-medium text-red-400 hover:bg-red-50 transition-all active:scale-[0.97]">
+                  <Trash2 className="w-3 h-3" />
+                  حذف
+                </button>
               </div>
             </div>
           ))}

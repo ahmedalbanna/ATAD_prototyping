@@ -107,3 +107,19 @@ export function updateStatus(id, status, ownerId) {
   query(sql, [status, id, ownerId]);
   return findById(id);
 }
+
+export function remove(id, ownerId) {
+  const bookingIds = query(`SELECT id FROM bookings WHERE asset_id = ?`, [id]).rows.map(r => r.id);
+  for (const bid of bookingIds) {
+    query(`DELETE FROM booking_status_history WHERE booking_id = ?`, [bid]);
+    query(`DELETE FROM payments WHERE booking_id = ?`, [bid]);
+    query(`DELETE FROM ratings WHERE booking_id = ?`, [bid]);
+    query(`DELETE FROM notifications WHERE booking_id = ?`, [bid]);
+    query(`DELETE FROM transactions WHERE booking_id = ?`, [bid]);
+  }
+  query(`DELETE FROM bookings WHERE asset_id = ?`, [id]);
+  query(`DELETE FROM ratings WHERE asset_id = ?`, [id]);
+  const sql = `DELETE FROM assets WHERE id = ? AND owner_id = ?`;
+  const result = query(sql, [id, ownerId]);
+  return result.rowCount > 0;
+}

@@ -40,6 +40,12 @@ export async function toggleStatus(id, status, ownerId) {
   return formatAsset(asset);
 }
 
+export async function deleteAsset(id, ownerId) {
+  const deleted = AssetModel.remove(id, ownerId);
+  if (!deleted) throw new AppError(404, "NOT_FOUND", "الأصل غير موجود أو لا تملك صلاحية الحذف");
+  return { id };
+}
+
 function formatAsset(row) {
   return {
     id: row.id,
