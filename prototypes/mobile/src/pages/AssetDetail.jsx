@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { MapPin, Star, User, Calendar, Check, FileText, Phone } from "lucide-react";
 import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
+import { assetStatusLabels, assetStatusColors } from "../data/mock";
 
 export default function AssetDetail() {
   const { id } = useParams();
@@ -58,6 +59,10 @@ export default function AssetDetail() {
             <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {asset.city}</span>
             <span className="text-gray-200">•</span>
             <span className="flex items-center gap-1"><User className="w-3 h-3" /> {asset.owner?.name}</span>
+            <span className="text-gray-200">•</span>
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${assetStatusColors[asset.status] || assetStatusColors.available}`}>
+              {assetStatusLabels[asset.status] || "متاح"}
+            </span>
           </div>
           <h1 className="text-2xl font-black text-gray-900">{asset.title}</h1>
         </div>
@@ -108,11 +113,18 @@ export default function AssetDetail() {
           </button>
         </div>
 
-        <button onClick={() => navigate(`/book/${asset.id}`)}
-          className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold py-4 btn-pill transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 flex items-center justify-center gap-2">
-          <Calendar className="w-5 h-5" />
-          طلب تأجير
-        </button>
+        {asset.status === "available" ? (
+          <button onClick={() => navigate(`/book/${asset.id}`)}
+            className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold py-4 btn-pill transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 flex items-center justify-center gap-2">
+            <Calendar className="w-5 h-5" />
+            طلب تأجير
+          </button>
+        ) : (
+          <button disabled
+            className="w-full bg-gray-300 text-white font-bold py-4 btn-pill flex items-center justify-center gap-2 cursor-not-allowed">
+            غير متاح للتأجير
+          </button>
+        )}
       </div>
     </Layout>
   );

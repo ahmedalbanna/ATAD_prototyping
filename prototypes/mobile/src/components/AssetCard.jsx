@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { MapPin, Star } from "lucide-react";
+import { assetStatusLabels, assetStatusColors } from "../data/mock";
 
 export default function AssetCard({ asset }) {
   return (
@@ -10,6 +11,9 @@ export default function AssetCard({ asset }) {
           className="w-full h-full object-cover" loading="lazy" />
         <span className="absolute top-2 right-2 bg-white/90 text-[11px] font-semibold px-2.5 py-1 rounded-full text-gray-700 shadow-sm">
           {asset.category}
+        </span>
+        <span className={`absolute bottom-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded-full border shadow-sm ${assetStatusColors[asset.status] || assetStatusColors.available}`}>
+          {assetStatusLabels[asset.status] || "متاح"}
         </span>
       </div>
       <div className="p-3 space-y-1.5">
