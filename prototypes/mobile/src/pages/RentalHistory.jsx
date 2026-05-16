@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Clock, Star } from "lucide-react";
 import { useBookings } from "../context/BookingContext";
 import Layout from "../components/Layout";
-import { statusLabels, statusColors, ratings as mockRatings } from "../data/mock";
+import { statusLabels, statusColors } from "../data/mock";
 
 export default function RentalHistory() {
   const navigate = useNavigate();
@@ -11,8 +11,6 @@ export default function RentalHistory() {
   const { asTenant } = useBookings();
   const history = asTenant.filter(b => ["completed", "expired", "rejected"].includes(b.status));
   const filtered = filter === "all" ? history : history.filter(b => b.status === filter);
-
-  const getRating = (bookingId) => mockRatings.find(r => r.bookingId === bookingId);
 
   return (
     <Layout title="سجل التأجير" onBack={() => navigate(-1)}>
@@ -38,7 +36,6 @@ export default function RentalHistory() {
       ) : (
         <div className="space-y-2">
           {filtered.map(b => {
-            const rating = getRating(b.id);
             return (
               <div key={b.id} className="bg-white rounded-xl border border-gray-100/80 p-3 shadow-sm">
                 <div className="flex gap-2.5">
@@ -58,21 +55,10 @@ export default function RentalHistory() {
 
                 {b.status === "completed" && (
                   <div className="mt-2 pt-2 border-t border-gray-50">
-                    {rating ? (
-                      <div className="flex items-center gap-2 text-xs text-gray-400">
-                        <div className="flex gap-0.5">
-                          {[1, 2, 3, 4, 5].map(s => (
-                            <Star key={s} className={`w-3 h-3 ${s <= rating.score ? "fill-amber-400 text-amber-400" : "text-gray-200"}`} />
-                          ))}
-                        </div>
-                        <span className="text-gray-400">{rating.comment}</span>
-                      </div>
-                    ) : (
-                      <button onClick={() => navigate(`/rate/${b.id}`)}
-                        className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline">
-                        <Star className="w-3 h-3" /> قيّم هذا الأصل
-                      </button>
-                    )}
+                    <button onClick={() => navigate(`/rate/${b.id}`)}
+                      className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline">
+                      <Star className="w-3 h-3" /> قيّم هذا الأصل
+                    </button>
                   </div>
                 )}
               </div>

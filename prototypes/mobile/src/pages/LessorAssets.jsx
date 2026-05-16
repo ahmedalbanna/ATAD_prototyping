@@ -6,7 +6,7 @@ import { api } from "../services/apiClient";
 import { useToast } from "../context/ToastContext";
 import Layout from "../components/Layout";
 import ConfirmDialog from "../components/ConfirmDialog";
-import { assetStatusLabels, assetStatusColors, assets as mockAssets, normalizeAsset } from "../data/mock";
+import { assetStatusLabels, assetStatusColors } from "../data/mock";
 
 export default function LessorAssets() {
   const navigate = useNavigate();
@@ -21,9 +21,7 @@ export default function LessorAssets() {
     if (user) {
       api.get(`/assets?owner_id=${user.id}`).then(data => {
         setAssets(data.data || data);
-      }).catch(() => {
-        setAssets(mockAssets.filter(a => String(a.ownerId) === String(user.id)).map(normalizeAsset));
-      });
+      }).catch(() => {});
     }
   };
 

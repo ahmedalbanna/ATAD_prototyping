@@ -7,10 +7,16 @@ import { useToast } from "../context/ToastContext";
 
 const roleLabels = { tenant: "مستأجر", lessor: "مؤجر" };
 const roleIcons = { tenant: User, lessor: Building2 };
+const trialUsers = [
+  { id: 1, name: "أحمد الحربي", phone: "555123456", role: "tenant" },
+  { id: 2, name: "سارة القحطاني", phone: "555654321", role: "lessor" },
+  { id: 3, name: "فهد الدوسري", phone: "555111222", role: "tenant" },
+  { id: 4, name: "نورة الشمري", phone: "555333444", role: "lessor" },
+];
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { login, sendOtp, verifyOtp, loading, allUsers } = useAuth();
+  const { login, sendOtp, verifyOtp, loading } = useAuth();
   const { showToast } = useToast();
   const [mode, setMode] = useState("login");
   const [step, setStep] = useState("phone");
@@ -52,7 +58,9 @@ export default function Auth() {
   };
 
   const handleQuickLogin = async (u) => {
-    await login(u.phone, u.role);
+    setPhone(u.phone);
+    setRole(u.role);
+    await login(u.phone, u.role, u.name);
     navigate(u.role === "lessor" ? "/lessor-dashboard" : "/home");
   };
 
@@ -104,7 +112,7 @@ export default function Auth() {
             {/* Trial accounts - primary login method */}
             <div className="space-y-2 mb-5">
               <p className="text-xs text-gray-400 text-center mb-3">حسابات تجريبية للمعاينة</p>
-              {allUsers.filter(u => u.role !== "admin").map(u => {
+              {trialUsers.map(u => {
                 const Icon = roleIcons[u.role];
                 return (
                   <button key={u.id} type="button" onClick={() => handleQuickLogin(u)}

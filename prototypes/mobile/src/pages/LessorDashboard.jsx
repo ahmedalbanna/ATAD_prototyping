@@ -5,7 +5,7 @@ import { useBookings } from "../context/BookingContext";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/apiClient";
 import { useToast } from "../context/ToastContext";
-import { assetStatusLabels, assetStatusColors, assets as mockAssets, normalizeAsset } from "../data/mock";
+import { assetStatusLabels, assetStatusColors } from "../data/mock";
 import Layout from "../components/Layout";
 import BookingCard from "../components/BookingCard";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -109,9 +109,7 @@ function AssetsTab() {
     if (user) {
       api.get(`/assets?owner_id=${user.id}`).then(data => {
         setAssets(data.data || data);
-      }).catch(() => {
-        setAssets(mockAssets.filter(a => String(a.ownerId) === String(user.id)).map(normalizeAsset));
-      });
+      }).catch(() => {});
     }
   };
 
@@ -261,8 +259,7 @@ function EarningsTab() {
   const [period, setPeriod] = useState("all");
 
   useEffect(() => {
-    if (user) api.get(`/assets?owner_id=${user.id}`).then(() => {
-    }).catch(() => { });
+    // TODO: Add lessor earnings API endpoint when available
   }, [user]);
 
   const earned = transactions.filter(t => t.status === "completed");

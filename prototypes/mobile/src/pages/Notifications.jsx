@@ -41,7 +41,7 @@ export default function Notifications() {
           {notifications.map((n, i) => {
             const Icon = typeIcons[n.type] || ClipboardList;
             return (
-              <div key={n.id} onClick={() => { markNotificationRead(n.id); if (n.bookingId) navigate(`/booking/${n.bookingId}`); }}
+              <div key={n.id} onClick={() => { markNotificationRead(n.id); if (n.booking_id) navigate(`/booking/${n.booking_id}`); }}
                 className={`bg-white rounded-2xl p-4 border transition-all duration-300 cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] animate-slide-up ${
                   n.is_read ? "border-gray-100/80" : "border-primary/20 bg-gradient-to-r from-primary/[0.02] to-transparent"
                 }`}
@@ -65,7 +65,7 @@ export default function Notifications() {
                     <p className="text-xs text-gray-400 mt-1 leading-relaxed">{n.message}</p>
                     <p className="text-[10px] text-gray-300 mt-2 flex items-center gap-1">
                       <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                      {(n.createdAt || "").slice(0, 10)}
+                      {(n.created_at || "").slice(0, 10)}
                     </p>
                   </div>
                 </div>

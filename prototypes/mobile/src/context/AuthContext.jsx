@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { api } from "../services/apiClient";
-import { users as mockUsers } from "../data/mock";
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = "atad_user";
@@ -73,28 +72,16 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (phone, role = "tenant", name = null) => {
     setLoading(true);
     try {
-      const existing = mockUsers.find(u => u.phone === phone);
-      const u = existing || { id: Date.now(), name: name || `مستخدم ${phone.slice(-4)}`, phone, role };
-      const fullPhone = `+966${phone}`;
-
-      if (existing) {
-        try {
-          await api.post("/auth/send-otp", { phone: fullPhone, role, name: u.name });
-          const result = await api.post("/auth/verify-otp", { phone: fullPhone, otp: "000000" });
-          if (result?.token) api.setToken(result.token);
-          if (result?.user) {
-            setUser(result.user);
-            setIsRealAccount(true);
-            return result.user;
-          }
-        } catch {
-          // API unavailable — use mock
-        }
+      const fullPhone = phone.startsWith("+966") ? phone : `+966${phone}`;
+      await api.post("/auth/send-otp", { phone: fullPhone, role, ...(name && { name }) });
+      const result = await api.post("/auth/verify-otp", { phone: fullPhone, otp: "000000" });
+      if (result.token) api.setToken(result.token);
+      if (result.user) {
+        setUser(result.user);
+        setIsRealAccount(true);
+        return result.user;
       }
-
-      setUser(u);
-      setIsRealAccount(false);
-      return u;
+      throw new Error("لم يتم استلام بيانات المستخدم");
     } finally {
       setLoading(false);
     }
@@ -135,7 +122,6 @@ export function AuthProvider({ children }) {
       isLessor, isTenant, isLoggedIn, isRealAccount,
       roleLabel: roleLabels[user?.role] || "",
       defaultRoute: roleRoutes[user?.role] || "/home",
-      allUsers: mockUsers,
       can,
     }}>
       {children}

@@ -8,7 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
 import AssetCard from "../components/AssetCard";
-import { assets as mockAssets, normalizeAsset } from "../data/mock";
+
 
 const categoryIcons = {
   "الكل": { icon: Package, color: "text-gray-600 bg-gray-100" },
@@ -21,12 +21,7 @@ const categoryIcons = {
 };
 
 const cities = [
-  { name: "الرياض", count: 24 },
-  { name: "جدة", count: 18 },
-  { name: "مكة", count: 12 },
-  { name: "الدمام", count: 9 },
-  { name: "الخبر", count: 7 },
-  { name: "المدينة", count: 6 },
+  "الرياض", "جدة", "مكة", "الدمام", "الخبر", "المدينة",
 ];
 
 const RECENT_KEY = "atad_recent_views";
@@ -44,14 +39,12 @@ export default function Home() {
   useEffect(() => {
     api.get("/assets").then(data => {
       setAssets(data.data || data);
-    }).catch(() => {
-      setAssets(mockAssets.map(normalizeAsset));
-    });
+    }).catch(() => {});
   }, []);
 
   const trending = [...assets].sort((a, b) => b.rating - a.rating).slice(0, 5);
   const recentAssets = assets.filter(a => recentViews.includes(a.id)).slice(0, 5);
-  const popularCities = cities.filter(c => assets.some(a => a.city === c.name)).slice(0, 4);
+  const popularCities = cities.filter(c => assets.some(a => a.city === c)).slice(0, 4);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -136,11 +129,11 @@ export default function Home() {
           </div>
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
             {popularCities.map(city => (
-              <button key={city.name} onClick={() => navigate(`/assets?city=${encodeURIComponent(city.name)}`)}
+              <button key={city} onClick={() => navigate(`/assets?city=${encodeURIComponent(city)}`)}
                 className="flex items-center gap-2 bg-white rounded-xl px-3.5 py-2.5 border border-gray-100/80 shadow-sm hover:border-primary/20 hover:shadow-md transition-all shrink-0">
                 <MapPin className="w-4 h-4 text-primary" />
-                <span className="text-xs font-semibold text-gray-900">{city.name}</span>
-                <span className="text-[10px] text-gray-400">{city.count} أصل</span>
+                <span className="text-xs font-semibold text-gray-900">{city}</span>
+                <span className="text-[10px] text-gray-400">{assets.filter(a => a.city === city).length} أصل</span>
               </button>
             ))}
           </div>

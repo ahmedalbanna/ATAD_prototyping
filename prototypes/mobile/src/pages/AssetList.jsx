@@ -4,7 +4,7 @@ import { Search, ArrowUpDown } from "lucide-react";
 import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
 import AssetCard from "../components/AssetCard";
-import { categories, assets as mockAssets, normalizeAsset } from "../data/mock";
+import { categories } from "../data/mock";
 
 export default function AssetList() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,9 +16,7 @@ export default function AssetList() {
   useEffect(() => {
     api.get("/assets").then(data => {
       setAllAssets(data.data || data);
-    }).catch(() => {
-      setAllAssets(mockAssets.map(normalizeAsset));
-    });
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {

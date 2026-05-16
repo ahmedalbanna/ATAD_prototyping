@@ -12,10 +12,7 @@ export default function LessorEarnings() {
   const [period, setPeriod] = useState("all");
 
   useEffect(() => {
-    if (user) api.get(`/assets?owner_id=${user.id}`).then(assets => {
-      // For now, use the admin revenue endpoint to get transaction data
-      // In production, there would be a specific lessor earnings endpoint
-    }).catch(() => { });
+    // TODO: Add lessor earnings API endpoint when available
   }, [user]);
 
   const earned = transactions.filter(t => t.status === "completed");
