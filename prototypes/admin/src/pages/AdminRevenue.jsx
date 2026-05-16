@@ -9,6 +9,13 @@ const monthNames = {
   "09": "سبتمبر", "10": "أكتوبر", "11": "نوفمبر", "12": "ديسمبر",
 };
 
+function formatMonth(m) {
+  const parts = m.split("-");
+  const year = parts[0];
+  const month = parts[1];
+  return month ? `${monthNames[month] || month} ${year}` : m;
+}
+
 export default function AdminRevenue() {
   const [data, setData] = useState(null);
 
@@ -18,26 +25,30 @@ export default function AdminRevenue() {
 
   const { total_revenue, total_bookings, monthly } = data;
   const months = monthly || [];
-  const validMonths = months.filter(m => m.revenue > 0);
-  const lastMonth = validMonths[validMonths.length - 1];
-  const prevMonth = validMonths[validMonths.length - 2];
+  const maxRevenue = Math.max(...months.map(m => m.revenue), 1);
+  const avgValue = total_bookings > 0 ? Math.round(total_revenue / total_bookings) : 0;
+
+  const lastMonth = months.filter(m => m.revenue > 0).at(-1);
+  const prevMonth = months.filter(m => m.revenue > 0).at(-2);
   const growth = prevMonth && lastMonth?.revenue > 0
     ? Math.round(((lastMonth.revenue - prevMonth.revenue) / prevMonth.revenue) * 100)
     : 0;
-  const avgValue = total_bookings > 0 ? Math.round(total_revenue / total_bookings) : 0;
-  const maxRevenue = Math.max(...months.map(m => m.revenue), 1);
 
   const cards = [
-    { label: "إجمالي الإيرادات", value: `${total_revenue} ﷼`, icon: Wallet, color: "bg-purple-50 text-purple-600" },
-    { label: "إجمالي الحجوزات", value: total_bookings, icon: TrendingUp, color: "bg-blue-50 text-blue-600" },
-    { label: "معدل النمو", value: `${growth}%`, icon: growth > 0 ? ArrowUp : ArrowDown, color: growth > 0 ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600" },
-    { label: "متوسط الحجز", value: `${avgValue} ﷼`, icon: Wallet, color: "bg-amber-50 text-amber-600" },
+    { label: "إجمالي الإيرادات", value: `${total_revenue} ﷼`, icon: Wallet, color: "bg-primary/10 text-primary" },
+    { label: "إجمالي الحجوزات", value: total_bookings, icon: TrendingUp, color: "bg-accent/10 text-accent" },
+    {
+      label: "معدل النمو", value: growth === 0 ? "—" : `${growth > 0 ? "+" : ""}${growth}%`,
+      icon: growth >= 0 ? ArrowUp : ArrowDown,
+      color: growth > 0 ? "bg-emerald-50 text-emerald-600" : growth < 0 ? "bg-red-50 text-red-600" : "bg-gray-50 text-gray-400",
+    },
+    { label: "متوسط الحجز", value: `${avgValue} ﷼`, icon: Wallet, color: "bg-primary-dark/10 text-primary-dark" },
   ];
 
   return (
     <AdminLayout title="الإيرادات">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {cards.map((c) => {
+        {cards.map(c => {
           const Icon = c.icon;
           return (
             <div key={c.label} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3 shadow-sm">
@@ -62,23 +73,20 @@ export default function AdminRevenue() {
         </div>
 
         <div className="p-6">
-          <div className="flex items-end gap-3 h-48" style={{ direction: "ltr" }}>
+          <div className="flex items-end gap-2 h-48" style={{ direction: "ltr" }}>
             {months.map((m, i) => {
-              const height = m.revenue > 0 ? Math.max((m.revenue / maxRevenue) * 100, 8) : 8;
+              const pct = m.revenue > 0 ? (m.revenue / maxRevenue) * 100 : 0;
+              const h = Math.max(pct, m.revenue > 0 ? 6 : 2);
               return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
-                  <span className="text-[10px] text-gray-400 font-medium">{m.revenue || ""}</span>
+                <div key={i} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
+                  <span className="text-[10px] text-gray-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                    {m.revenue || ""}
+                  </span>
                   <div
-                    className="w-full rounded-t-lg transition-all duration-500 hover:opacity-80 cursor-pointer"
-                    style={{
-                      height: `${height}%`,
-                      background: m.revenue > 0
-                        ? "linear-gradient(to top, #E14A11, #E86A3A)"
-                        : "#f0f0f0",
-                      minHeight: "4px",
-                    }}
+                    className={`w-full rounded-t-md transition-all duration-500 group-hover:opacity-80 ${m.revenue > 0 ? "bg-bar-gradient" : "bg-gray-100"}`}
+                    style={{ height: `${h}%`, minHeight: "2px" }}
                   />
-                  <span className="text-[10px] text-gray-400 mt-1">{m.month}</span>
+                  <span className="text-[10px] text-gray-400 mt-0.5">{formatMonth(m.month)}</span>
                 </div>
               );
             })}
@@ -96,18 +104,20 @@ export default function AdminRevenue() {
             </thead>
             <tbody>
               {months.map((m, i) => (
-                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50">
-                  <td className="p-3 font-medium text-gray-900">{m.month}</td>
+                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                  <td className="p-3 font-medium text-gray-900">{formatMonth(m.month)}</td>
                   <td className="p-3 text-gray-500">{m.bookings}</td>
                   <td className="p-3 font-semibold text-gray-900">{m.revenue} ﷼</td>
                 </tr>
               ))}
-              <tr className="bg-gray-50/50 font-medium">
-                <td className="p-3 text-gray-900">الإجمالي</td>
-                <td className="p-3 text-gray-900">{total_bookings}</td>
-                <td className="p-3 font-bold text-primary">{total_revenue} ﷼</td>
-              </tr>
             </tbody>
+            <tfoot>
+              <tr className="bg-primary/5 border-t-2 border-primary/10">
+                <td className="p-3 font-bold text-gray-900">الإجمالي</td>
+                <td className="p-3 font-bold text-gray-900">{total_bookings}</td>
+                <td className="p-3 font-black text-primary text-base">{total_revenue} ﷼</td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>

@@ -31,3 +31,26 @@
 }
 .animate-slide-up { animation: slide-up 0.35s ease-out both; }
 .animate-scale-in { animation: scale-in 0.2s ease-out both; }
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.bg-bar-gradient {
+  background: linear-gradient(to top, var(--color-primary), var(--color-primary-light));
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  white-space: nowrap;
+}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Logo from "../components/Logo";
 import { ArrowRight, Smartphone, ShieldCheck, Loader, User, Building2, LogIn } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -92,9 +93,7 @@ export default function Auth() {
     <div className="min-h-screen bg-white flex flex-col p-6">
       <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
         <div className="mb-6 text-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary-dark rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-lg shadow-primary/20">
-            <span className="text-xl font-black text-white">عت</span>
-          </div>
+          <Logo className="w-36 mx-auto mb-3" variant="red" />
           <h1 className="text-xl font-bold text-gray-900">
             {mode === "login" ? "تسجيل الدخول" : "إنشاء حساب"}
           </h1>

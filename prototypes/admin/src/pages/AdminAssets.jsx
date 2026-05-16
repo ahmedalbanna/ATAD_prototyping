@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, Package, MapPin, DollarSign, Calendar, Eye, Layers, BarChart3, CheckCircle, AlertCircle, Wrench } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import { api } from "../services/apiClient";
@@ -7,11 +7,12 @@ import { api } from "../services/apiClient";
 const statusLabels = { available: "متاح", rented: "مؤجر", maintenance: "صيانة" };
 const statusColors = {
   available: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
-  rented: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+  rented: "bg-primary/10 text-primary ring-1 ring-primary/30",
   maintenance: "bg-red-50 text-red-700 ring-1 ring-red-200",
 };
 
 export default function AdminAssets() {
+  const navigate = useNavigate();
   const [assets, setAssets] = useState([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -23,9 +24,9 @@ export default function AdminAssets() {
     .filter(a => a.title.includes(search) || a.owner_name?.includes(search) || a.city.includes(search) || (a.category || "").includes(search));
 
   const statsCards = [
-    { label: "إجمالي الأصول", value: assets.length, icon: Package, color: "bg-blue-50 text-blue-600" },
-    { label: "متاح", value: assets.filter(a => a.status === "available").length, icon: CheckCircle, color: "bg-emerald-50 text-emerald-600" },
-    { label: "مؤجر", value: assets.filter(a => a.status === "rented").length, icon: BarChart3, color: "bg-amber-50 text-amber-600" },
+    { label: "إجمالي الأصول", value: assets.length, icon: Package, color: "bg-primary/10 text-primary" },
+    { label: "متاح", value: assets.filter(a => a.status === "available").length, icon: CheckCircle, color: "bg-accent/10 text-accent" },
+    { label: "مؤجر", value: assets.filter(a => a.status === "rented").length, icon: BarChart3, color: "bg-primary-dark/10 text-primary-dark" },
     { label: "صيانة", value: assets.filter(a => a.status === "maintenance").length, icon: Wrench, color: "bg-red-50 text-red-600" },
   ];
 
@@ -86,10 +87,12 @@ export default function AdminAssets() {
             </thead>
             <tbody>
               {filtered.map((asset, idx) => (
-                <tr key={asset.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                <tr key={asset.id} onClick={() => navigate(`/admin/asset/${asset.id}`)}
+                  className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer">
                   <td className="p-3 text-gray-400 font-mono text-xs">{String(idx + 1).padStart(2, "0")}</td>
                   <td className="p-3">
-                    <Link to={`/admin/asset/${asset.id}`} className="font-medium text-gray-900 hover:text-primary transition-colors">
+                    <Link to={`/admin/asset/${asset.id}`} onClick={e => e.stopPropagation()}
+                      className="font-medium text-gray-900 hover:text-primary transition-colors">
                       {asset.title}
                     </Link>
                   </td>
@@ -98,17 +101,13 @@ export default function AdminAssets() {
                   <td className="p-3 font-semibold text-gray-900 whitespace-nowrap">{asset.price_per_day} ﷼</td>
                   <td className="p-3 text-gray-400">{asset.city}</td>
                   <td className="p-3">
-                    <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[asset.status]}`}>
+                    <span className={`badge ${statusColors[asset.status]}`}>
                       {statusLabels[asset.status]}
                     </span>
                   </td>
                   <td className="p-3 text-gray-400 text-xs">{asset.created_at?.slice(0, 10)}</td>
                   <td className="p-3 text-center">
-                    <Link to={`/admin/asset/${asset.id}`}
-                      className="inline-flex items-center gap-1 text-xs text-primary font-semibold hover:bg-primary/5 px-2.5 py-1.5 rounded-lg transition-colors">
-                      <Eye className="w-3.5 h-3.5" />
-                      تفاصيل
-                    </Link>
+                    <Eye className="w-3.5 h-3.5 inline text-gray-300" />
                   </td>
                 </tr>
               ))}

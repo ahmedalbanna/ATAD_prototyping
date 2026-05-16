@@ -1,35 +1,26 @@
 import { useState, useEffect } from "react";
-import { Users, Package, ClipboardList, Wallet } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Users, Package, ClipboardList, Wallet, ArrowLeft } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
+import StatCard from "../components/StatCard";
 import { api } from "../services/apiClient";
 import { statusLabels, statusColors } from "../data/mock";
 
-function StatCard({ label, value, icon: Icon, color }) {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100/80 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all">
-      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${color}`}>
-        <Icon className="w-6 h-6" />
-      </div>
-      <div>
-        <p className="text-2xl font-black text-gray-900">{value}</p>
-        <p className="text-sm text-gray-400 font-medium">{label}</p>
-      </div>
-    </div>
-  );
-}
-
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [stats, setStats] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [users, setUsers] = useState([]);
   const [assets, setAssets] = useState([]);
 
   useEffect(() => {
+    if (location.pathname !== "/admin") return;
     api.get("/admin/stats").then(setStats).catch(() => {});
     api.get("/admin/bookings").then(setBookings).catch(() => {});
     api.get("/admin/users").then(setUsers).catch(() => {});
     api.get("/admin/assets").then(setAssets).catch(() => {});
-  }, []);
+  }, [location.pathname]);
 
   if (!stats) {
     return <AdminLayout title="لوحة التحكم"><div className="text-center py-20 text-gray-400 shimmer rounded-2xl h-48" /></AdminLayout>;
@@ -44,20 +35,22 @@ export default function Dashboard() {
   return (
     <AdminLayout title="لوحة التحكم">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="إجمالي المستخدمين" value={stats.total_users} icon={Users} color="bg-blue-50 text-blue-600" />
-        <StatCard label="إجمالي الأصول" value={stats.total_assets} icon={Package} color="bg-emerald-50 text-emerald-600" />
-        <StatCard label="الطلبات النشطة" value={stats.active_rentals} icon={ClipboardList} color="bg-amber-50 text-amber-600" />
-        <StatCard label="الإيرادات" value={`${stats.revenue} ﷼`} icon={Wallet} color="bg-purple-50 text-purple-600" />
+        <StatCard label="إجمالي المستخدمين" value={stats.total_users} icon={Users} color="bg-primary/10 text-primary" />
+        <StatCard label="إجمالي الأصول" value={stats.total_assets} icon={Package} color="bg-accent/10 text-accent" />
+        <StatCard label="الطلبات النشطة" value={stats.active_rentals} icon={ClipboardList} color="bg-primary-dark/10 text-primary-dark" />
+        <StatCard label="الإيرادات" value={`${stats.revenue} ﷼`} icon={Wallet} color="bg-primary/10 text-primary" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100/80 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+          <Link to="/admin/bookings" className="p-4 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
             <h3 className="font-bold text-gray-900 flex items-center gap-2">
               <ClipboardList className="w-4 h-4 text-primary" /> آخر الطلبات
             </h3>
-            <span className="text-xs text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full">إجمالي: {stats.total_bookings}</span>
-          </div>
+            <span className="flex items-center gap-1.5 text-xs text-primary font-semibold">
+              عرض الكل <ArrowLeft className="w-3 h-3" />
+            </span>
+          </Link>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -71,13 +64,13 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {recentBookings.map(b => (
-                  <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                    <td className="p-3 font-medium text-gray-900">{b.asset?.title}</td>
-                    <td className="p-3 text-gray-500">{b.tenant?.name}</td>
+                  <tr key={b.id} onClick={() => navigate(`/admin/booking/${b.id}`)} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer">
+                    <td className="p-3 font-medium text-gray-900">{b.asset_title}</td>
+                    <td className="p-3 text-gray-500">{b.tenant_name}</td>
                     <td className="p-3 text-gray-400 text-xs">{b.start_date} → {b.end_date}</td>
                     <td className="p-3 font-semibold text-gray-900">{b.total_price} ﷼</td>
                     <td className="p-3">
-                      <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[b.status]}`}>
+                      <span className={`badge ${statusColors[b.status]}`}>
                         {statusLabels[b.status]}
                       </span>
                     </td>
@@ -94,28 +87,28 @@ export default function Dashboard() {
             نظرة سريعة
           </h3>
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl">
+            <Link to="/admin/users" className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl hover:bg-gray-100/50 transition-colors">
               <span className="text-sm text-gray-500">المستخدمين</span>
               <div className="flex gap-4 text-sm">
                 <span><span className="font-bold text-gray-900">{tenants}</span> <span className="text-gray-400">مستأجر</span></span>
                 <span><span className="font-bold text-gray-900">{lessors}</span> <span className="text-gray-400">مؤجر</span></span>
               </div>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl">
+            </Link>
+            <Link to="/admin/assets" className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl hover:bg-gray-100/50 transition-colors">
               <span className="text-sm text-gray-500">الأصول حسب الحالة</span>
               <div className="flex gap-4 text-sm">
-                <span><span className="font-bold text-emerald-600">{available}</span> <span className="text-gray-400">متاح</span></span>
-                <span><span className="font-bold text-amber-600">{rented}</span> <span className="text-gray-400">مؤجر</span></span>
+                <span><span className="font-bold text-accent">{available}</span> <span className="text-gray-400">متاح</span></span>
+                <span><span className="font-bold text-primary-dark">{rented}</span> <span className="text-gray-400">مؤجر</span></span>
               </div>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl">
+            </Link>
+            <Link to="/admin/bookings" className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl hover:bg-gray-100/50 transition-colors">
               <span className="text-sm text-gray-500">الطلبات قيد الانتظار</span>
-              <span className="font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full text-sm">{stats.pending_bookings}</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-transparent rounded-xl">
+              <span className="font-bold text-accent bg-accent/10 px-2.5 py-0.5 rounded-full text-sm">{stats.pending_bookings}</span>
+            </Link>
+            <Link to="/admin/revenue" className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-transparent rounded-xl hover:from-primary/10 transition-all">
               <span className="text-sm text-gray-500">إجمالي الإيرادات</span>
               <span className="font-bold text-gray-900 text-lg">{stats.revenue} ﷼</span>
-            </div>
+            </Link>
           </div>
         </div>
       </div>

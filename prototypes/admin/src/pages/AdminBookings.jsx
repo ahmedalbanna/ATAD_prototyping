@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, ClipboardList, CalendarDays, DollarSign, Clock, CheckCircle, XCircle, AlertCircle, Eye } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import { api } from "../services/apiClient";
@@ -14,6 +14,7 @@ function daysBetween(a, b) {
 }
 
 export default function AdminBookings() {
+  const navigate = useNavigate();
   const [allBookings, setAllBookings] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
@@ -27,10 +28,10 @@ export default function AdminBookings() {
   const countByStatus = (s) => allBookings.filter(b => b.status === s).length;
 
   const statsCards = [
-    { label: "إجمالي الطلبات", value: allBookings.length, icon: ClipboardList, color: "bg-blue-50 text-blue-600" },
-    { label: "قيد الانتظار", value: countByStatus("pending"), icon: Clock, color: "bg-amber-50 text-amber-600" },
-    { label: "نشط", value: countByStatus("active"), icon: AlertCircle, color: "bg-emerald-50 text-emerald-600" },
-    { label: "مكتمل", value: countByStatus("completed"), icon: CheckCircle, color: "bg-green-50 text-green-600" },
+    { label: "إجمالي الطلبات", value: allBookings.length, icon: ClipboardList, color: "bg-primary/10 text-primary" },
+    { label: "قيد الانتظار", value: countByStatus("pending"), icon: Clock, color: "bg-accent/10 text-accent" },
+    { label: "نشط", value: countByStatus("active"), icon: AlertCircle, color: "bg-primary-dark/10 text-primary-dark" },
+    { label: "مكتمل", value: countByStatus("completed"), icon: CheckCircle, color: "bg-gray-brand/10 text-gray-brand" },
     { label: "مرفوض", value: countByStatus("rejected"), icon: XCircle, color: "bg-red-50 text-red-600" },
   ];
 
@@ -96,25 +97,27 @@ export default function AdminBookings() {
               {filtered.map((b, idx) => {
                 const duration = daysBetween(b.start_date, b.end_date);
                 return (
-                  <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                  <tr key={b.id} onClick={() => navigate(`/admin/booking/${b.id}`)}
+                    className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer">
                     <td className="p-3 text-gray-400 font-mono text-xs">{String(idx + 1).padStart(2, "0")}</td>
-                    <td className="p-3 font-medium text-gray-900">{b.asset_title}</td>
+                    <td className="p-3">
+                      <Link to={`/admin/booking/${b.id}`} onClick={e => e.stopPropagation()}
+                        className="font-medium text-gray-900 hover:text-primary transition-colors">
+                        {b.asset_title}
+                      </Link>
+                    </td>
                     <td className="p-3 text-gray-500">{b.tenant_name}</td>
                     <td className="p-3 text-gray-500">{b.owner_name}</td>
                     <td className="p-3 text-gray-400 text-xs whitespace-nowrap">{b.start_date} <span className="text-gray-300">→</span> {b.end_date}</td>
                     <td className="p-3 text-gray-500 text-xs">{duration} يوم</td>
                     <td className="p-3 font-semibold text-gray-900 whitespace-nowrap">{b.total_price} ﷼</td>
                     <td className="p-3">
-                      <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${statusColors[b.status]}`}>
+                      <span className={`badge ${statusColors[b.status]}`}>
                         {statusLabels[b.status]}
                       </span>
                     </td>
                     <td className="p-3 text-center">
-                      <Link to={`/admin/booking/${b.id}`}
-                        className="inline-flex items-center gap-1 text-xs text-primary font-semibold hover:bg-primary/5 px-2.5 py-1.5 rounded-lg transition-colors">
-                        <Eye className="w-3.5 h-3.5" />
-                        تفاصيل
-                      </Link>
+                      <Eye className="w-3.5 h-3.5 inline text-gray-300" />
                     </td>
                   </tr>
                 );

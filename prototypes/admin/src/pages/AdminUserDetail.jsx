@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Phone, CalendarDays, Package, ClipboardList, ArrowRight, Edit3, Trash2, X, Loader } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -8,9 +8,9 @@ import { statusLabels, statusColors } from "../data/mock";
 
 const roleLabels = { tenant: "مستأجر", lessor: "مؤجر", admin: "مدير" };
 const roleColors = {
-  tenant: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
-  lessor: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
-  admin: "bg-purple-50 text-purple-700 ring-1 ring-purple-200",
+  tenant: "bg-primary/10 text-primary ring-1 ring-primary/30",
+  lessor: "bg-accent/10 text-accent ring-1 ring-accent/30",
+  admin: "bg-primary-dark/10 text-primary-dark ring-1 ring-primary-dark/30",
 };
 const roles = ["tenant", "lessor", "admin"];
 
@@ -144,7 +144,7 @@ export default function AdminUserDetail() {
             </div>
             <h2 className="font-bold text-gray-900">{user.name}</h2>
             <p className="text-sm text-gray-400" dir="ltr">{user.phone}</p>
-            <span className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${roleColors[user.role]}`}>
+            <span className={`badge mt-2 ${roleColors[user.role]}`}>
               {roleLabels[user.role]}
             </span>
             <p className="text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
@@ -165,7 +165,7 @@ export default function AdminUserDetail() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">حالة الحساب</span>
-                <span className="text-emerald-600 text-xs font-medium bg-emerald-50 px-1.5 py-0.5 rounded-full">نشط</span>
+                <span className="badge bg-emerald-50 text-emerald-600">نشط</span>
               </div>
             </div>
           </div>
@@ -192,12 +192,13 @@ export default function AdminUserDetail() {
                   </thead>
                   <tbody>
                     {bookings.map(b => (
-                      <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                      <tr key={b.id} onClick={() => navigate(`/admin/booking/${b.id}`)}
+                        className="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer">
                         <td className="p-3 font-medium text-gray-900">{b.asset_title}</td>
                         <td className="p-3 text-gray-400 text-xs">{b.start_date} → {b.end_date}</td>
                         <td className="p-3 font-semibold">{b.total_price} ﷼</td>
                         <td className="p-3">
-                          <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${statusColors[b.status]}`}>
+                          <span className={`badge ${statusColors[b.status]}`}>
                             {statusLabels[b.status]}
                           </span>
                         </td>
@@ -229,14 +230,15 @@ export default function AdminUserDetail() {
                   </thead>
                   <tbody>
                     {assets.map(a => (
-                      <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                      <tr key={a.id} onClick={() => navigate(`/admin/asset/${a.id}`)}
+                        className="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer">
                         <td className="p-3 font-medium text-gray-900">{a.title}</td>
                         <td className="p-3 font-semibold">{a.price_per_day} ﷼</td>
                         <td className="p-3 text-gray-400">{a.city}</td>
                         <td className="p-3">
-                          <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
+                          <span className={`badge ${
                             a.status === "available" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" :
-                            a.status === "rented" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200" :
+                            a.status === "rented" ? "bg-primary/10 text-primary ring-1 ring-primary/30" :
                             "bg-red-50 text-red-700 ring-1 ring-red-200"
                           }`}>
                             {a.status === "available" ? "متاح" : a.status === "rented" ? "مؤجر" : "صيانة"}

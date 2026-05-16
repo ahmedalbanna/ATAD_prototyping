@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, Users as UsersIcon, Phone, Mail, Plus, Edit3, Trash2, X, Loader, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -7,9 +7,9 @@ import { api } from "../services/apiClient";
 
 const roleLabels = { tenant: "مستأجر", lessor: "مؤجر", admin: "مدير" };
 const roleColors = {
-  tenant: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
-  lessor: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
-  admin: "bg-purple-50 text-purple-700 ring-1 ring-purple-200",
+  tenant: "bg-primary/10 text-primary ring-1 ring-primary/30",
+  lessor: "bg-accent/10 text-accent ring-1 ring-accent/30",
+  admin: "bg-primary-dark/10 text-primary-dark ring-1 ring-primary-dark/30",
 };
 const avatarColors = [
   "from-primary to-primary-dark",
@@ -120,6 +120,7 @@ function UserModal({ user, onClose, onSaved }) {
 }
 
 export default function Users() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("all");
@@ -164,10 +165,10 @@ export default function Users() {
   };
 
   const stats = [
-    { label: "إجمالي المستخدمين", value: users.length, color: "bg-blue-50 text-blue-600" },
-    { label: "مستأجر", value: users.filter(u => u.role === "tenant").length, color: "bg-emerald-50 text-emerald-600" },
-    { label: "مؤجر", value: users.filter(u => u.role === "lessor").length, color: "bg-amber-50 text-amber-600" },
-    { label: "مدير", value: users.filter(u => u.role === "admin").length, color: "bg-purple-50 text-purple-600" },
+    { label: "إجمالي المستخدمين", value: users.length, color: "bg-primary/10 text-primary" },
+    { label: "مستأجر", value: users.filter(u => u.role === "tenant").length, color: "bg-accent/10 text-accent" },
+    { label: "مؤجر", value: users.filter(u => u.role === "lessor").length, color: "bg-primary-dark/10 text-primary-dark" },
+    { label: "مدير", value: users.filter(u => u.role === "admin").length, color: "bg-gray-brand/10 text-gray-brand" },
   ];
 
   const getAvatarColor = (name) => {
@@ -235,14 +236,16 @@ export default function Users() {
             </thead>
             <tbody>
               {paged.map((user, idx) => (
-                <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors animate-slide-up" style={{ animationDelay: `${idx * 0.03}s` }}>
+                <tr key={user.id} onClick={() => navigate(`/admin/user/${user.id}`)}
+                  className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer animate-slide-up" style={{ animationDelay: `${idx * 0.03}s` }}>
                   <td className="p-3 text-gray-400 font-mono text-xs">{String(safePage * PAGE_SIZE + idx + 1).padStart(2, "0")}</td>
                   <td className="p-3">
                     <div className="flex items-center gap-2.5">
                       <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAvatarColor(user.name)} flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0`}>
                         {user.name?.[0]}
                       </div>
-                      <Link to={`/admin/user/${user.id}`} className="font-medium text-gray-900 hover:text-primary transition-colors">
+                      <Link to={`/admin/user/${user.id}`} onClick={e => e.stopPropagation()}
+                        className="font-medium text-gray-900 hover:text-primary transition-colors">
                         {user.name}
                       </Link>
                     </div>
@@ -250,19 +253,19 @@ export default function Users() {
                   <td className="p-3 text-gray-500" dir="ltr">{user.phone}</td>
                   <td className="p-3 text-gray-400 text-xs max-w-[160px] truncate" dir="ltr">{user.email || "—"}</td>
                   <td className="p-3">
-                    <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${roleColors[user.role]}`}>
+                    <span className={`badge ${roleColors[user.role]}`}>
                       {roleLabels[user.role]}
                     </span>
                   </td>
                   <td className="p-3 text-gray-400 text-xs whitespace-nowrap">{user.created_at?.slice(0, 10)}</td>
                   <td className="p-3">
                     <div className="flex items-center justify-center gap-1">
-                      <button onClick={() => openEdit(user)}
+                      <button onClick={e => { e.stopPropagation(); openEdit(user); }}
                         className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/5 transition-all"
                         title="تعديل">
                         <Edit3 className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => setDeleteTarget(user)}
+                      <button onClick={e => { e.stopPropagation(); setDeleteTarget(user); }}
                         className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
                         title="حذف">
                         <Trash2 className="w-3.5 h-3.5" />

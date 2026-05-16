@@ -9,7 +9,7 @@ import { statusLabels, statusColors } from "../data/mock";
 const assetStatusLabels = { available: "متاح", rented: "مؤجر", maintenance: "صيانة" };
 const assetStatusColors = {
   available: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
-  rented: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+  rented: "bg-primary/10 text-primary ring-1 ring-primary/30",
   maintenance: "bg-red-50 text-red-700 ring-1 ring-red-200",
 };
 
@@ -169,7 +169,7 @@ export default function AdminAssetDetail() {
               </div>
               <div className="flex items-center justify-between mt-3">
                 <span className="text-2xl font-black text-primary">{price_per_day} <span className="text-sm font-medium text-gray-400">﷼/يوم</span></span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${assetStatusColors[status]}`}>
+                <span className={`badge ${assetStatusColors[status]}`}>
                   {assetStatusLabels[status]}
                 </span>
               </div>
@@ -186,7 +186,7 @@ export default function AdminAssetDetail() {
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <h3 className="font-bold text-sm text-gray-900 mb-3">معلومات المالك</h3>
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center font-bold text-emerald-600 text-sm">
+              <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center font-bold text-accent text-sm">
                 {owner_name?.[0]}
               </div>
               <div>
@@ -266,20 +266,18 @@ export default function AdminAssetDetail() {
                   </thead>
                   <tbody>
                     {bookings.map(b => (
-                      <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                      <tr key={b.id} onClick={() => navigate(`/admin/booking/${b.id}`)}
+                        className="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer">
                         <td className="p-3 font-medium text-gray-900">{b.tenant_name}</td>
                         <td className="p-3 text-gray-400 text-xs whitespace-nowrap">{b.start_date} → {b.end_date}</td>
                         <td className="p-3 font-semibold whitespace-nowrap">{b.total_price} ﷼</td>
                         <td className="p-3">
-                          <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${statusColors[b.status]}`}>
+                          <span className={`badge ${statusColors[b.status]}`}>
                             {statusLabels[b.status]}
                           </span>
                         </td>
                         <td className="p-3 text-center">
-                          <Link to={`/admin/booking/${b.id}`}
-                            className="text-xs text-primary font-semibold hover:underline">
-                            تفاصيل
-                          </Link>
+                          <span className="text-xs text-gray-300">←</span>
                         </td>
                       </tr>
                     ))}

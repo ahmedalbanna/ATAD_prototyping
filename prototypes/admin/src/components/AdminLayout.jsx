@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, Package, ClipboardList, Wallet, Menu, X, ChevronLeft, LogOut, Mail, Lock } from "lucide-react";
+import { LayoutDashboard, Users, Package, ClipboardList, Wallet, Menu, X, LogOut, Mail, Lock } from "lucide-react";
 import Logo from "./Logo";
 import { adminLogin, adminLogout } from "../services/apiClient";
 
@@ -16,18 +16,16 @@ export default function AdminLayout({ children, title }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [ready, setReady] = useState(false);
   const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem("atad_admin_token"));
+  const [mountKey, setMountKey] = useState(0);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem("atad_admin_token")) {
-      setReady(true);
-    } else {
-      setReady(true);
+    if (loggedIn && location.pathname === "/admin/login") {
+      navigate("/admin", { replace: true });
     }
   }, []);
 
@@ -37,6 +35,8 @@ export default function AdminLayout({ children, title }) {
     const ok = await adminLogin(loginEmail, loginPassword);
     if (ok) {
       setLoggedIn(true);
+      setMountKey(k => k + 1);
+      navigate("/admin", { replace: true });
     } else {
       setLoginError("فشل تسجيل الدخول. تحقق من البريد الإلكتروني وكلمة المرور");
     }
@@ -47,26 +47,15 @@ export default function AdminLayout({ children, title }) {
     adminLogout();
     setLoggedIn(false);
     localStorage.removeItem("atad_admin_user");
-    navigate("/admin/login");
+    navigate("/admin/login", { replace: true });
   };
-
-  if (!ready) {
-    return (
-      <div className="min-h-screen bg-[#FDFDFC] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-gray-400">جاري التحميل...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (!loggedIn) {
     return (
       <div className="min-h-screen bg-[#FDFDFC] flex items-center justify-center p-6">
         <div className="text-center max-w-sm w-full">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-dark rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-2xl font-black text-white">عت</span>
+          <div className="mb-6">
+            <Logo className="w-36 mx-auto" variant="red" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 mb-1">لوحة التحكم</h1>
           <p className="text-sm text-gray-400 mb-6">تسجيل الدخول إلى لوحة التحكم</p>
@@ -105,17 +94,16 @@ export default function AdminLayout({ children, title }) {
 
   return (
     <div className="min-h-screen bg-[#FDFDFC] flex">
-      <aside className={`fixed inset-y-0 right-0 z-40 w-64 bg-sidebar text-white transform transition-all duration-300 lg:static lg:translate-x-0 ${
-        sidebarOpen ? "translate-x-0 shadow-2xl" : "translate-x-full lg:translate-x-0"
-      }`}>
-        <div className="p-4 border-b border-white/10">
+      <aside className={`fixed inset-y-0 right-0 z-40 w-64 bg-white text-gray-900 border-l border-gray-100/80 transform transition-all duration-300 lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0 shadow-2xl" : "translate-x-full lg:translate-x-0"
+        }`}>
+        <div className="p-4 border-b border-gray-100/80">
           <div className="flex items-center justify-between">
-            <Logo className="w-28" />
-            <button onClick={() => setSidebarOpen(false)} className="text-white/50 hover:text-white lg:hidden">
+            <Logo className="w-28" variant="red" />
+            <button onClick={() => setSidebarOpen(false)} className="text-gray-400 hover:text-gray-600 lg:hidden">
               <X className="w-5 h-5" />
             </button>
           </div>
-          <p className="text-white/40 text-xs mt-1">لوحة التحكم</p>
+          <p className="text-gray-400 text-xs mt-1">لوحة التحكم</p>
         </div>
 
         <nav className="p-3 space-y-1">
@@ -124,11 +112,10 @@ export default function AdminLayout({ children, title }) {
             const isActive = location.pathname === item.to;
             return (
               <Link key={item.to} to={item.to} onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                  isActive
-                    ? "bg-white/10 text-white font-semibold shadow-sm"
-                    : "text-white/50 hover:text-white hover:bg-white/5"
-                }`}>
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${isActive
+                  ? "bg-primary/10 text-primary font-semibold border-r-2 border-primary"
+                  : "text-gray-400 hover:text-gray-900 hover:bg-gray-50"
+                  }`}>
                 <Icon className="w-5 h-5" />
                 {item.label}
               </Link>
@@ -136,18 +123,18 @@ export default function AdminLayout({ children, title }) {
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100/80">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-sm font-bold shadow-md">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-sm font-bold shadow-md text-white">
               خ
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold">خالد المدير</p>
-              <p className="text-xs text-white/40">مدير النظام</p>
+              <p className="text-xs text-gray-400">مدير النظام</p>
             </div>
           </div>
           <button onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 text-xs text-white/40 hover:text-white hover:bg-white/5 py-2 rounded-lg transition-all">
+            className="w-full flex items-center justify-start gap-2 text-xs text-gray-400 hover:text-gray-900 hover:bg-gray-50 py-2 rounded-lg transition-all">
             <LogOut className="w-3.5 h-3.5" /> تسجيل الخروج
           </button>
         </div>
@@ -170,7 +157,7 @@ export default function AdminLayout({ children, title }) {
             <span className="hidden sm:block text-sm font-medium text-gray-700">خالد المدير</span>
           </div>
         </header>
-        <main className="flex-1 p-4 lg:p-6 max-w-7xl mx-auto w-full">{children}</main>
+        <main key={mountKey} className="flex-1 p-4 lg:p-6 max-w-7xl mx-auto w-full">{children}</main>
       </div>
     </div>
   );

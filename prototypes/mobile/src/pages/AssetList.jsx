@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, ArrowUpDown } from "lucide-react";
 import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
@@ -6,10 +7,11 @@ import AssetCard from "../components/AssetCard";
 import { categories, assets as mockAssets, normalizeAsset } from "../data/mock";
 
 export default function AssetList() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [allAssets, setAllAssets] = useState([]);
-  const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState("الكل");
-  const [sortBy, setSortBy] = useState("");
+  const [search, setSearch] = useState(searchParams.get("search") || "");
+  const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "الكل");
+  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "");
 
   useEffect(() => {
     api.get("/assets").then(data => {
@@ -19,9 +21,23 @@ export default function AssetList() {
     });
   }, []);
 
+  useEffect(() => {
+    const params = {};
+    if (search) params.search = search;
+    if (activeCategory !== "الكل") params.category = activeCategory;
+    if (sortBy) params.sort = sortBy;
+    setSearchParams(params, { replace: true });
+  }, [search, activeCategory, sortBy, setSearchParams]);
+
   const filtered = allAssets
     .filter(a => activeCategory === "الكل" || a.category === activeCategory)
-    .filter(a => a.title.includes(search) || a.city.includes(search))
+    .filter(a => {
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return a.title.toLowerCase().includes(q)
+        || a.city.toLowerCase().includes(q)
+        || (a.category || "").toLowerCase().includes(q);
+    })
     .sort((a, b) => {
       if (sortBy === "price_asc") return a.price_per_day - b.price_per_day;
       if (sortBy === "price_desc") return b.price_per_day - a.price_per_day;
@@ -34,7 +50,7 @@ export default function AssetList() {
       <div className="relative mb-4">
         <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="ابحث عن أصل أو مدينة..."
+          placeholder="ابحث عن أصل، مدينة، أو تصنيف..."
           className="w-full pr-11 pl-4 py-3 bg-white border border-gray-200/80 rounded-2xl focus:border-primary focus:outline-none transition-all text-sm placeholder:text-gray-400" />
       </div>
 

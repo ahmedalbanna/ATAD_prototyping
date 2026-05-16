@@ -32,7 +32,8 @@ export function isAdminLoggedIn() {
 
 async function request(endpoint, options = {}) {
   const headers = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const t = token || localStorage.getItem("atad_admin_token");
+  if (t) headers["Authorization"] = `Bearer ${t}`;
   const res = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
   const json = await res.json();
   if (!json.success) throw new Error(json.error?.message || "Request failed");

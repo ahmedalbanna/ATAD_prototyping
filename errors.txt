@@ -1,0 +1,10 @@
+index-1Qi_LXGv.js:295
+ GET http://185.190.140.93:3001/api/v1/admin/stats 401 (Unauthorized)
+
+index-1Qi_LXGv.js:295
+ GET http://185.190.140.93:3001/api/v1/admin/bookings 401 (Unauthorized)
+index-1Qi_LXGv.js:295
+ GET http://185.190.140.93:3001/api/v1/admin/assets 401 (Unauthorized)
+index-1Qi_LXGv.js:295
+ GET http://185.190.140.93:3001/api/v1/admin/users 401 (Unauthorized)
+﻿

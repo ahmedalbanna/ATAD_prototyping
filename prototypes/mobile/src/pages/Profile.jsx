@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ClipboardList, FileText, Info, LogOut, ChevronLeft, Wallet, Settings, Edit3, Compass } from "lucide-react";
+import { ClipboardList, FileText, Info, LogOut, ChevronLeft, Wallet, Package, Edit3, Compass } from "lucide-react";
 import Layout from "../components/Layout";
 import { useAuth } from "../context/AuthContext";
 
@@ -11,21 +11,21 @@ export default function Profile() {
 
   const menuItems = isLessor
     ? [
-        { label: "إدارة الطلبات", icon: ClipboardList, desc: "الموافقة على طلبات التأجير", to: "/lessor-dashboard" },
-        { label: "إدارة الأصول", icon: Settings, desc: "إضافة وتعديل وحذف الأصول", to: "/lessor-assets" },
-        { label: "الأرباح", icon: Wallet, desc: "متابعة الإيرادات", to: "/lessor-earnings" },
-        { label: "تعديل البيانات", icon: Edit3, desc: "الاسم، رقم الجوال", to: "/edit-profile" },
-        { label: "دليل الاستخدام", icon: Compass, desc: "شرح التطبيق والبدء السريع", to: "/onboarding/lessor" },
-        { label: "الشروط والأحكام", icon: FileText, desc: "سياسة الاستخدام", to: "/terms" },
-        { label: "عن التطبيق", icon: Info, desc: "الإصدار 1.0.0" },
-      ]
+      { label: "تعديل البيانات", icon: Edit3, desc: "الاسم، رقم الجوال", to: "/edit-profile" },
+      { label: "إدارة الطلبات", icon: ClipboardList, desc: "الموافقة على طلبات التأجير", to: "/lessor-dashboard" },
+      { label: "إدارة الأصول", icon: Package, desc: "إضافة وتعديل وحذف الأصول", to: "/lessor-assets" },
+      { label: "الأرباح", icon: Wallet, desc: "متابعة الإيرادات", to: "/lessor-earnings" },
+      { label: "دليل الاستخدام", icon: Compass, desc: "شرح التطبيق والبدء السريع", to: "/onboarding/lessor" },
+      { label: "الشروط والأحكام", icon: FileText, desc: "سياسة الاستخدام", to: "/terms" },
+      { label: "عن التطبيق", icon: Info, desc: "الإصدار 1.0.0" },
+    ]
     : [
-        { label: "تعديل البيانات", icon: Edit3, desc: "الاسم، رقم الجوال", to: "/edit-profile" },
-        { label: "دليل الاستخدام", icon: Compass, desc: "شرح التطبيق والبدء السريع", to: "/onboarding/tenant" },
-        { label: "طلباتي", icon: ClipboardList, desc: "جميع طلبات التأجير", to: "/bookings" },
-        { label: "الشروط والأحكام", icon: FileText, desc: "سياسة الاستخدام", to: "/terms" },
-        { label: "عن التطبيق", icon: Info, desc: "الإصدار 1.0.0" },
-      ];
+      { label: "تعديل البيانات", icon: Edit3, desc: "الاسم، رقم الجوال", to: "/edit-profile" },
+      { label: "دليل الاستخدام", icon: Compass, desc: "شرح التطبيق والبدء السريع", to: "/onboarding/tenant" },
+      { label: "طلباتي", icon: ClipboardList, desc: "جميع طلبات التأجير", to: "/bookings" },
+      { label: "الشروط والأحكام", icon: FileText, desc: "سياسة الاستخدام", to: "/terms" },
+      { label: "عن التطبيق", icon: Info, desc: "الإصدار 1.0.0" },
+    ];
 
   const handleLogout = () => { logout(); navigate("/auth"); };
 

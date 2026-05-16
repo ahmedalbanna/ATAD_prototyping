@@ -1,5 +1,6 @@
-export default function Logo({ className = "w-32" }) {
+export default function Logo({ className = "w-32", variant = "white" }) {
+  const src = variant === "red" ? "/Logo-Red.svg" : "/Logo-White.svg";
   return (
-    <img src="/Logo-White.svg" alt="عتاد" className={className} />
+    <img src={src} alt="عتاد" className={className} />
   );
 }

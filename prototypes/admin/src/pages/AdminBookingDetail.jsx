@@ -56,7 +56,7 @@ export default function AdminBookingDetail() {
                     <h2 className="text-xl font-bold text-gray-900">{booking.asset_title}</h2>
                     <p className="text-sm text-gray-500 mt-1">{booking.asset_city}</p>
                   </div>
-                  <span className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${statusColors[booking.status]}`}>
+                  <span className={`badge shrink-0 ${statusColors[booking.status]}`}>
                     {statusLabels[booking.status]}
                   </span>
                 </div>
@@ -142,7 +142,7 @@ export default function AdminBookingDetail() {
                       <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50">
                         <td className="p-2 text-gray-500 text-xs">{s.from_status ? statusLabels[s.from_status] || s.from_status : "—"}</td>
                         <td className="p-2">
-                          <span className={`inline-block text-xs px-1.5 py-0.5 rounded-full font-medium ${statusColors[s.to_status]}`}>
+                          <span className={`badge ${statusColors[s.to_status]}`}>
                             {statusLabels[s.to_status] || s.to_status}
                           </span>
                         </td>
@@ -216,7 +216,7 @@ export default function AdminBookingDetail() {
               <User className="w-4 h-4 text-primary" /> المستأجر
             </h3>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center font-bold text-blue-600 text-sm">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">
                 {booking.tenant_name?.[0]}
               </div>
               <div>
@@ -235,7 +235,7 @@ export default function AdminBookingDetail() {
               <Building2 className="w-4 h-4 text-primary" /> المؤجر
             </h3>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center font-bold text-emerald-600 text-sm">
+              <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center font-bold text-accent text-sm">
                 {booking.owner_name?.[0]}
               </div>
               <div>

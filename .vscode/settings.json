@@ -1,0 +1,10 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "atad",
+            "database": "${workspaceFolder:ATAD_prototyping}/prototypes/api/data/atad.db"
+        }
+    ]
+}
