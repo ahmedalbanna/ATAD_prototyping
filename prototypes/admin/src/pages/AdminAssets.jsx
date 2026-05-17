@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Package, MapPin, DollarSign, Calendar, Eye, Layers, BarChart3, CheckCircle, AlertCircle, Wrench } from "lucide-react";
+import { Search, Package, MapPin, DollarSign, Calendar, Eye, Layers, BarChart3, CheckCircle, AlertCircle, Wrench, Plus, X, Loader, User, Image } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import { api } from "../services/apiClient";
 
@@ -11,11 +11,182 @@ const statusColors = {
   maintenance: "bg-red-50 text-red-700 ring-1 ring-red-200",
 };
 
+function CreateAssetModal({ onClose, onSaved }) {
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
+  const [price, setPrice] = useState("");
+  const [city, setCity] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("available");
+  const [ownerId, setOwnerId] = useState("");
+  const [lessors, setLessors] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const fileRef = useRef(null);
+
+  useEffect(() => {
+    api.get("/admin/users").then(users => {
+      setLessors(users.filter(u => u.role === "lessor"));
+    }).catch(() => {});
+  }, []);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setPreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadImage = async () => {
+    if (!selectedFile) return null;
+    const API_HOST = (import.meta.env.VITE_API_URL || "http://185.190.140.93:3001/api/v1").replace("/api/v1", "");
+    const token = localStorage.getItem("atad_admin_token");
+    const formData = new FormData();
+    formData.append("image", selectedFile);
+    const res = await fetch(`${API_HOST}/api/v1/upload`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error?.message || "فشل رفع الصورة");
+    return `${API_HOST}${json.data.url}`;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!title.trim() || !price || !city.trim() || !ownerId) {
+      setError("العنوان والسعر والمدينة والمالك مطلوبون");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const imageUrl = await uploadImage();
+      await api.post("/admin/assets", {
+        title, category, price_per_day: parseFloat(price), city, description, status, owner_id: ownerId,
+        ...(imageUrl && { image_url: imageUrl }),
+      });
+      onSaved();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-scale-in max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-bold text-gray-900">إضافة أصل جديد</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 transition-all hover:rotate-90">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 text-red-600 text-sm rounded-xl p-3 mb-4 border border-red-100">{error}</div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">المالك (المؤجر)</label>
+            <div className="relative">
+              <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+              <select value={ownerId} onChange={e => setOwnerId(e.target.value)}
+                className="w-full pr-10 pl-3 p-2.5 border border-gray-200 rounded-xl text-sm focus:border-primary focus:outline-none transition-all appearance-none bg-white">
+                <option value="">اختر المالك...</option>
+                {lessors.map(l => (
+                  <option key={l.id} value={l.id}>{l.name} — {l.phone}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">العنوان</label>
+            <input type="text" value={title} onChange={e => setTitle(e.target.value)}
+              className="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:border-primary focus:outline-none transition-all" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">السعر/يوم (﷼)</label>
+              <input type="number" value={price} onChange={e => setPrice(e.target.value)}
+                className="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:border-primary focus:outline-none transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">المدينة</label>
+              <input type="text" value={city} onChange={e => setCity(e.target.value)}
+                className="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:border-primary focus:outline-none transition-all" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">التصنيف</label>
+            <input type="text" value={category} onChange={e => setCategory(e.target.value)}
+              className="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:border-primary focus:outline-none transition-all" />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">الوصف</label>
+            <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
+              className="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:border-primary focus:outline-none transition-all resize-none" />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">صورة الأصل</label>
+            <div onClick={() => fileRef.current?.click()}
+              className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-primary/50 transition-colors">
+              {preview ? (
+                <img src={preview} alt="معاينة" className="max-h-32 mx-auto rounded-lg" />
+              ) : (
+                <div className="text-gray-400">
+                  <Image className="w-8 h-8 mx-auto mb-1" />
+                  <p className="text-xs">اضغط لاختيار صورة</p>
+                </div>
+              )}
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">الحالة</label>
+            <div className="grid grid-cols-3 gap-2">
+              {["available", "rented", "maintenance"].map(s => (
+                <button key={s} type="button" onClick={() => setStatus(s)}
+                  className={`p-2 rounded-xl border-2 text-sm font-semibold transition-all ${
+                    status === s ? "border-primary bg-primary/5 text-primary" : "border-gray-200 text-gray-500 hover:border-gray-300"
+                  }`}>
+                  {statusLabels[s]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button type="submit" disabled={saving}
+            className="w-full bg-primary text-white font-bold py-2.5 rounded-xl hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+            {saving && <Loader className="w-4 h-4 animate-spin" />}
+            إضافة الأصل
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminAssets() {
   const navigate = useNavigate();
   const [assets, setAssets] = useState([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => { api.get("/admin/assets").then(setAssets).catch(() => {}); }, []);
 
@@ -67,6 +238,10 @@ export default function AdminAssets() {
               </button>
             ))}
           </div>
+          <button onClick={() => setCreateOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-white shadow-sm hover:bg-primary-dark transition-all active:scale-[0.97] shrink-0">
+            <Plus className="w-3.5 h-3.5" /> إضافة أصل
+          </button>
           <span className="text-xs text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full">{filtered.length} أصل</span>
         </div>
 
@@ -122,6 +297,10 @@ export default function AdminAssets() {
           </div>
         )}
       </div>
+
+      {createOpen && (
+        <CreateAssetModal onClose={() => setCreateOpen(false)} onSaved={() => { setCreateOpen(false); api.get("/admin/assets").then(setAssets).catch(() => {}); }} />
+      )}
     </AdminLayout>
   );
 }

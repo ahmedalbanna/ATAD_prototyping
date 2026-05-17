@@ -108,11 +108,11 @@ router.get("/assets", (req, res) => {
 });
 
 router.post("/assets", (req, res) => {
-  const { title, owner_id, category, price_per_day, city, description, image_url } = req.body;
+  const { title, owner_id, category, price_per_day, city, description, image_url, status } = req.body;
   if (!title || !owner_id || !price_per_day || !city) {
     return res.status(400).json({ success: false, error: { code: "VALIDATION_ERROR", message: "العنوان والمالك والسعر والمدينة مطلوبون" } });
   }
-  const asset = AssetModel.create({ title, owner_id, category, price_per_day: parseFloat(price_per_day), city, description, image_url });
+  const asset = AssetModel.create({ title, owner_id, category, price_per_day: parseFloat(price_per_day), city, description, image_url: image_url || "", status });
   res.status(201).json({ success: true, data: asset });
 });
 

@@ -76,11 +76,11 @@ export function findById(id) {
 
 export function create(data) {
   const sql = `
-    INSERT INTO assets (id, owner_id, title, description, category, price_per_day, city, image_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO assets (id, owner_id, title, description, category, price_per_day, city, image_url, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
   const id = randomUUID();
-  query(sql, [id, data.owner_id, data.title, data.description, data.category, data.price_per_day, data.city, data.image_url]);
+  query(sql, [id, data.owner_id, data.title, data.description, data.category, data.price_per_day, data.city, data.image_url, data.status || "available"]);
   return findById(id);
 }
 

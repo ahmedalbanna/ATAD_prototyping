@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Package, MapPin, User, DollarSign, CalendarDays, ArrowRight, Edit3, Trash2, Phone, Layers, Tag, TrendingUp, X, Check, Loader, CreditCard, BarChart3 } from "lucide-react";
+import { Package, MapPin, User, DollarSign, CalendarDays, ArrowRight, Edit3, Trash2, Phone, Layers, Tag, TrendingUp, X, Check, Loader, CreditCard, BarChart3, Users, Image } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { api } from "../services/apiClient";
@@ -20,8 +20,44 @@ function EditAssetModal({ asset, onClose, onSaved }) {
   const [city, setCity] = useState(asset?.city || "");
   const [description, setDescription] = useState(asset?.description || "");
   const [status, setStatus] = useState(asset?.status || "available");
+  const [ownerId, setOwnerId] = useState(asset?.owner_id || "");
+  const [lessors, setLessors] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const fileRef = useRef(null);
+
+  useEffect(() => {
+    api.get("/admin/users").then(users => {
+      setLessors(users.filter(u => u.role === "lessor"));
+    }).catch(() => {});
+  }, []);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setPreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadImage = async () => {
+    if (!selectedFile) return null;
+    const API_HOST = (import.meta.env.VITE_API_URL || "http://185.190.140.93:3001/api/v1").replace("/api/v1", "");
+    const token = localStorage.getItem("atad_admin_token");
+    const formData = new FormData();
+    formData.append("image", selectedFile);
+    const res = await fetch(`${API_HOST}/api/v1/upload`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error?.message || "فشل رفع الصورة");
+    return `${API_HOST}${json.data.url}`;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,7 +68,12 @@ function EditAssetModal({ asset, onClose, onSaved }) {
     setSaving(true);
     setError("");
     try {
-      await api.put(`/admin/assets/${asset.id}`, { title, category, price_per_day: parseFloat(price), city, description, status });
+      const imageUrl = await uploadImage();
+      await api.put(`/admin/assets/${asset.id}`, {
+        title, category, price_per_day: parseFloat(price), city, description, status,
+        owner_id: ownerId || undefined,
+        ...(imageUrl && { image_url: imageUrl }),
+      });
       onSaved();
     } catch (err) {
       setError(err.message);
@@ -57,6 +98,20 @@ function EditAssetModal({ asset, onClose, onSaved }) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">المالك (المؤجر)</label>
+            <div className="relative">
+              <Users className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+              <select value={ownerId} onChange={e => setOwnerId(e.target.value)}
+                className="w-full pr-10 pl-3 p-2.5 border border-gray-200 rounded-xl text-sm focus:border-primary focus:outline-none transition-all appearance-none bg-white">
+                <option value="">اختر المالك...</option>
+                {lessors.map(l => (
+                  <option key={l.id} value={l.id}>{l.name} — {l.phone}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1.5">العنوان</label>
             <input type="text" value={title} onChange={e => setTitle(e.target.value)}
@@ -86,6 +141,24 @@ function EditAssetModal({ asset, onClose, onSaved }) {
             <label className="block text-xs font-semibold text-gray-500 mb-1.5">الوصف</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
               className="w-full p-2.5 border border-gray-200 rounded-xl text-sm focus:border-primary focus:outline-none transition-all resize-none" />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">صورة الأصل</label>
+            <div onClick={() => fileRef.current?.click()}
+              className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-primary/50 transition-colors">
+              {preview ? (
+                <img src={preview} alt="معاينة" className="max-h-32 mx-auto rounded-lg" />
+              ) : asset?.image_url ? (
+                <img src={asset.image_url} alt={asset.title} className="max-h-32 mx-auto rounded-lg" />
+              ) : (
+                <div className="text-gray-400">
+                  <Image className="w-8 h-8 mx-auto mb-1" />
+                  <p className="text-xs">اضغط لتغيير الصورة</p>
+                </div>
+              )}
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
           </div>
 
           <div>
