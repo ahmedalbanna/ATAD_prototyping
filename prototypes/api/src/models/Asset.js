@@ -4,12 +4,12 @@ import { query } from "../config/database.js";
 export const ASSET_STATUSES = ["available", "rented", "maintenance"];
 export const CATEGORIES = [
   "الكل",
-  "معدات ثقيلة",
-  "مركبات",
-  "معدات كهربائية",
-  "معدات بناء",
-  "معدات صناعية",
-  "أدوات يدوية",
+  "أجهزة تقنية",
+  "أجهزة محمولة",
+  "شاشات",
+  "طابعات",
+  "خوادم",
+  "برمجيات",
 ];
 
 export function findAll(filters = {}) {

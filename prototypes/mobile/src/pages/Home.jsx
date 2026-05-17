@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Package, ClipboardList, ArrowLeft, MapPin, Star, TrendingUp,
-  Clock, Search, Building2, Wrench, Zap, Truck, Drill, HardHat,
+  Clock, Search, Monitor, Server, Tablet, Printer, Code,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/apiClient";
@@ -12,12 +12,12 @@ import AssetCard from "../components/AssetCard";
 
 const categoryIcons = {
   "الكل": { icon: Package, color: "text-gray-600 bg-gray-100" },
-  "معدات ثقيلة": { icon: Building2, color: "text-orange-600 bg-orange-50" },
-  "مركبات": { icon: Truck, color: "text-blue-600 bg-blue-50" },
-  "معدات كهربائية": { icon: Zap, color: "text-yellow-600 bg-yellow-50" },
-  "معدات بناء": { icon: HardHat, color: "text-amber-600 bg-amber-50" },
-  "معدات صناعية": { icon: Wrench, color: "text-emerald-600 bg-emerald-50" },
-  "أدوات يدوية": { icon: Drill, color: "text-purple-600 bg-purple-50" },
+  "أجهزة تقنية": { icon: Monitor, color: "text-blue-600 bg-blue-50" },
+  "أجهزة محمولة": { icon: Tablet, color: "text-purple-600 bg-purple-50" },
+  "شاشات": { icon: Monitor, color: "text-cyan-600 bg-cyan-50" },
+  "طابعات": { icon: Printer, color: "text-amber-600 bg-amber-50" },
+  "خوادم": { icon: Server, color: "text-emerald-600 bg-emerald-50" },
+  "برمجيات": { icon: Code, color: "text-indigo-600 bg-indigo-50" },
 };
 
 const cities = [

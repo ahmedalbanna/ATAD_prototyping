@@ -111,7 +111,7 @@ export default function AddAsset() {
               <Tag className="w-3.5 h-3.5 text-primary" /> عنوان الأصل
             </label>
             <input type="text" value={form.title} onChange={e => update("title", e.target.value)}
-              placeholder="مثال: حفار صغير"
+              placeholder="مثال: لابتوب محمول"
               className={`w-full p-3 border rounded-xl focus:outline-none transition-all text-sm ${
                 errors.title ? "border-red-300 bg-red-50/50 focus:border-red-400" : "border-gray-200 bg-gray-50/50 focus:border-primary"
               }`} />
