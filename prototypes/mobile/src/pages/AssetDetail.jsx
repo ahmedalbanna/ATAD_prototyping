@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MapPin, Star, User, Calendar, Check, FileText, Phone } from "lucide-react";
+import { MapPin, Star, User, Calendar, Check, FileText, Phone, ShieldCheck } from "lucide-react";
 import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
 import { assetStatusLabels, assetStatusColors } from "../data/mock";
@@ -42,34 +42,41 @@ export default function AssetDetail() {
       <div className="-mx-4 -mt-4 relative overflow-hidden">
         <img src={asset.image_url} alt={asset.title}
           className="w-full aspect-[16/9] object-cover scale-110 animate-scale-in" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent" />
         <span className="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-xs font-semibold px-3 py-1 rounded-full text-gray-700 shadow-lg">
           {asset.category}
         </span>
-        <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-xs font-semibold px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
-          <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-          {asset.rating}
-        </span>
+        {asset.rating > 0 && (
+          <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-xs font-semibold px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+            {asset.rating}
+          </span>
+        )}
         <div className="absolute -bottom-6 -right-6 w-16 h-16 bg-white/10 rounded-full animate-float" />
       </div>
 
       <div className="relative -mt-8 bg-white rounded-t-3xl p-5 space-y-5 shadow-xl shadow-black/5">
         <div className="animate-slide-up">
-          <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
+          <div className="flex items-center gap-2 text-xs text-gray-400 mb-2 flex-wrap">
             <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {asset.city}</span>
             <span className="text-gray-200">•</span>
             <span className="flex items-center gap-1"><User className="w-3 h-3" /> {asset.owner?.name}</span>
-            <span className="text-gray-200">•</span>
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${assetStatusColors[asset.status] || assetStatusColors.available}`}>
-              {assetStatusLabels[asset.status] || "متاح"}
+            <span className="trust-badge">
+              <ShieldCheck className="w-2.5 h-2.5" /> موثّق
             </span>
           </div>
           <h1 className="text-2xl font-black text-gray-900">{asset.title}</h1>
+          <span className={`status-badge-lg mt-2 ${assetStatusColors[asset.status] || assetStatusColors.available}`}>
+            {assetStatusLabels[asset.status] || "متاح"}
+          </span>
         </div>
 
-        <div className="flex items-baseline gap-1.5 bg-gradient-to-r from-primary/5 via-primary/[0.02] to-transparent rounded-2xl p-4 animate-scale-in stagger-1">
-          <span className="text-4xl font-black text-primary">{asset.price_per_day}</span>
-          <span className="text-gray-400 text-sm font-medium">﷼ / اليوم</span>
+        <div className="bg-gradient-to-r from-primary/[0.07] via-primary/[0.02] to-transparent rounded-2xl p-4 animate-scale-in stagger-1 border border-primary/10">
+          <span className="text-[10px] text-gray-400 font-medium block mb-1">السعر ليوم واحد</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-5xl font-black text-primary tracking-tight">{asset.price_per_day}</span>
+            <span className="text-gray-400 text-sm font-medium">﷼</span>
+          </div>
         </div>
 
         <div className="animate-slide-up stagger-2">
@@ -106,7 +113,12 @@ export default function AssetDetail() {
           </div>
           <div className="flex-1">
             <p className="text-xs font-semibold text-gray-900">صاحب الأصل</p>
-            <p className="text-[10px] text-gray-400">{asset.owner?.name}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-[10px] text-gray-400">{asset.owner?.name}</p>
+              <span className="trust-badge">
+                <ShieldCheck className="w-2 h-2" /> موثّق
+              </span>
+            </div>
           </div>
           <button className="text-xs bg-primary/10 text-primary font-semibold px-3 py-1.5 btn-pill hover:bg-primary/20 transition-colors">
             اتصل

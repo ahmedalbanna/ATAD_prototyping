@@ -35,10 +35,31 @@ function CreateAssetModal({ onClose, onSaved }) {
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setPreview(reader.result);
-    reader.readAsDataURL(file);
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("حجم الصورة يتجاوز 5 ميجابايت");
+      return;
+    }
+
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      if (img.width < 400 || img.height < 300) {
+        setError(`الصورة صغيرة جداً. الحد الأدنى 400×300 بكسل (حجمها ${img.width}×${img.height})`);
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      URL.revokeObjectURL(objectUrl);
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = () => setPreview(reader.result);
+      reader.readAsDataURL(file);
+    };
+    img.onerror = () => {
+      setError("تعذر فتح الصورة. يرجى اختيار صورة صالحة");
+      URL.revokeObjectURL(objectUrl);
+    };
+    img.src = objectUrl;
   };
 
   const uploadImage = async () => {

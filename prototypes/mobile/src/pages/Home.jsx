@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Package, ClipboardList, ArrowLeft, MapPin, Star, TrendingUp,
   Clock, Search, Monitor, Server, Tablet, Printer, Code,
+  ShieldCheck, FileSignature, MessageSquare,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/apiClient";
@@ -53,15 +54,21 @@ export default function Home() {
 
   return (
     <Layout title="عتاد">
-      {/* Role-aware banner */}
+      {/* Role-aware banner with tagline */}
       <div className="bg-gradient-to-br from-primary via-primary-dark to-[#7a0e0d] rounded-2xl p-5 text-white mb-5 shadow-lg relative overflow-hidden">
         <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/5 rounded-full" />
         <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-accent/10 rounded-full" />
         <div className="relative z-10">
           <p className="text-white/60 text-xs mb-0.5">
-            {user ? `أهلاً، ${user.name}` : "أهلاً بك"}
+            {user ? `أهلاً، ${user.name}` : "أهلاً بك في"}
           </p>
-          <h2 className="text-xl font-bold mb-1">منصة عتاد</h2>
+          <h2 className="text-2xl font-black mb-1 leading-tight">عتاد</h2>
+          <p className="text-accent font-bold text-sm mb-2">الوصول أسهل من التملك</p>
+          <div className="flex flex-wrap gap-3 text-[10px] text-white/70 mb-3">
+            <span className="flex items-center gap-1">✓ معدات متنوعة</span>
+            <span className="flex items-center gap-1">✓ تأجير مرن</span>
+            <span className="flex items-center gap-1">✓ توصيل سريع</span>
+          </div>
           {isLessor ? (
             <div className="flex items-center gap-4 mt-2">
               <div>
@@ -90,6 +97,23 @@ export default function Home() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Trust bar */}
+      <div className="trust-bar mb-5">
+        {[
+          { icon: ShieldCheck, label: "توثيق", desc: "هوية موثقة" },
+          { icon: FileSignature, label: "عقود", desc: "إلكترونية آمنة" },
+          { icon: MessageSquare, label: "تقييمات", desc: "مراجعات شفافة" },
+        ].map(({ icon: Icon, label, desc }) => (
+          <div key={label} className="trust-bar-item">
+            <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center">
+              <Icon className="w-4 h-4 text-primary" />
+            </div>
+            <span className="text-[11px] font-bold text-gray-800">{label}</span>
+            <span className="text-[9px] text-gray-400">{desc}</span>
+          </div>
+        ))}
       </div>
 
       {/* Search bar */}
