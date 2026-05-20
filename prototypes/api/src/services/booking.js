@@ -1,5 +1,6 @@
 import * as BookingModel from "../models/Booking.js";
 import * as AssetModel from "../models/Asset.js";
+import * as UserModel from "../models/User.js";
 import * as TransactionModel from "../models/Transaction.js";
 import * as NotificationModel from "../models/Notification.js";
 import { AppError } from "../middleware/errorHandler.js";
@@ -31,6 +32,10 @@ export async function createBooking(data) {
   const asset = AssetModel.findById(data.asset_id);
   if (!asset) throw new AppError(404, "NOT_FOUND", "الأصل غير موجود");
   if (asset.status !== "available") throw new AppError(400, "VALIDATION_ERROR", "الأصل غير متاح للتأجير");
+
+  const tenant = UserModel.findById(data.tenant_id);
+  if (!tenant) throw new AppError(404, "NOT_FOUND", "المستخدم غير موجود");
+  if (tenant.verified !== "verified") throw new AppError(403, "VERIFICATION_REQUIRED", "يجب توثيق الحساب أولاً قبل التأجير");
 
   const start = new Date(data.start_date);
   const end = new Date(data.end_date);

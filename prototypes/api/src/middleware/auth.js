@@ -27,3 +27,10 @@ export function requireRole(...roles) {
     next();
   };
 }
+
+export function requireVerified(req, res, next) {
+  if (!req.user || req.user.verified !== "verified") {
+    throw new AppError(403, "VERIFICATION_REQUIRED", "يجب توثيق الحساب أولاً قبل التأجير");
+  }
+  next();
+}

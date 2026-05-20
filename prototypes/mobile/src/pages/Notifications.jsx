@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Bell, CheckCheck, ClipboardList, Wallet, Settings } from "lucide-react";
+import { Bell, CheckCheck, ClipboardList, Wallet, Settings, ShieldCheck, ShieldX } from "lucide-react";
 import { useBookings } from "../context/BookingContext";
 import Layout from "../components/Layout";
 
@@ -8,6 +8,21 @@ const typeIcons = {
   payment: Wallet,
   system: Settings,
 };
+
+function getNotificationIcon(n) {
+  if (n.title?.includes("توثيق")) {
+    return n.title?.includes("رفض") ? ShieldX : ShieldCheck;
+  }
+  return typeIcons[n.type] || ClipboardList;
+}
+
+function getNotificationColor(n) {
+  if (n.title?.includes("توثيق")) {
+    return n.title?.includes("رفض") ? "bg-red-50" : "bg-emerald-50";
+  }
+  return n.type === "booking_status" ? "bg-blue-50" :
+         n.type === "payment" ? "bg-emerald-50" : "bg-gray-50";
+}
 
 export default function Notifications() {
   const navigate = useNavigate();
@@ -39,18 +54,24 @@ export default function Notifications() {
       ) : (
         <div className="space-y-2">
           {notifications.map((n, i) => {
-            const Icon = typeIcons[n.type] || ClipboardList;
+            const Icon = getNotificationIcon(n);
+            const colorClass = getNotificationColor(n);
+            const onClick = () => {
+              markNotificationRead(n.id);
+              if (n.booking_id) navigate(`/booking/${n.booking_id}`);
+              if (n.title?.includes("توثيق")) {
+                if (n.title?.includes("رفض")) navigate("/verification?rejected=1");
+                else navigate("/verification");
+              }
+            };
             return (
-              <div key={n.id} onClick={() => { markNotificationRead(n.id); if (n.booking_id) navigate(`/booking/${n.booking_id}`); }}
+              <div key={n.id} onClick={onClick}
                 className={`bg-white rounded-2xl p-4 border transition-all duration-300 cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] animate-slide-up ${
                   n.is_read ? "border-gray-100/80" : "border-primary/20 bg-gradient-to-r from-primary/[0.02] to-transparent"
                 }`}
                 style={{ animationDelay: `${i * 0.05}s` }}>
                 <div className="flex gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    n.type === "booking_status" ? "bg-blue-50" :
-                    n.type === "payment" ? "bg-emerald-50" : "bg-gray-50"
-                  }`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${colorClass}`}>
                     <Icon className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">

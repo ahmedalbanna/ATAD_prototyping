@@ -41,6 +41,7 @@ export function updateUser(id, data) {
   if (data.role !== undefined) { fields.push("role=?"); params.push(data.role); }
   if (data.email !== undefined) { fields.push("email=?"); params.push(data.email); }
   if (data.password !== undefined) { fields.push("password=?"); params.push(data.password); }
+  if (data.verified !== undefined) { fields.push("verified=?"); params.push(data.verified); }
 
   if (fields.length === 0) return findById(id);
 
@@ -60,13 +61,17 @@ export function findByRole(role) {
   return result.rows;
 }
 
-export function findAll(search, role) {
+export function findAll(search, role, verified) {
   let sql = "SELECT * FROM users WHERE 1=1";
   const params = [];
 
   if (role) {
     sql += " AND role = ?";
     params.push(role);
+  }
+  if (verified) {
+    sql += " AND verified = ?";
+    params.push(verified);
   }
   if (search) {
     sql += " AND (name LIKE ? OR phone LIKE ?)";

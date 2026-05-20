@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MapPin, Star, User, Calendar, Check, FileText, Phone, ShieldCheck } from "lucide-react";
+import { MapPin, Star, User, Calendar, Check, FileText, Phone, ShieldCheck, AlertCircle } from "lucide-react";
 import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
 import { assetStatusLabels, assetStatusColors } from "../data/mock";
+import { useAuth } from "../context/AuthContext";
 
 export default function AssetDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, isVerified, isTenant } = useAuth();
   const [asset, setAsset] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -126,11 +128,27 @@ export default function AssetDetail() {
         </div>
 
         {asset.status === "available" ? (
-          <button onClick={() => navigate(`/book/${asset.id}`)}
-            className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold py-4 btn-pill transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 flex items-center justify-center gap-2">
-            <Calendar className="w-5 h-5" />
-            طلب تأجير
-          </button>
+          <>
+            {isTenant && !isVerified ? (
+              <div className="space-y-2">
+                <button onClick={() => navigate("/verification")}
+                  className="w-full bg-amber-500 text-white font-bold py-4 btn-pill transition-all hover:bg-amber-600 flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20">
+                  <ShieldCheck className="w-5 h-5" />
+                  وثّق حسابك أولاً للتأجير
+                </button>
+                <p className="text-xs text-amber-600 text-center flex items-center justify-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  يجب توثيق الحساب قبل استئجار الأصول
+                </p>
+              </div>
+            ) : (
+              <button onClick={() => navigate(`/book/${asset.id}`)}
+                className="w-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold py-4 btn-pill transition-all duration-300 hover:shadow-xl hover:shadow-primary/25 flex items-center justify-center gap-2">
+                <Calendar className="w-5 h-5" />
+                طلب تأجير
+              </button>
+            )}
+          </>
         ) : (
           <button disabled
             className="w-full bg-gray-300 text-white font-bold py-4 btn-pill flex items-center justify-center gap-2 cursor-not-allowed">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Search, Users as UsersIcon, Phone, Mail, Plus, Edit3, Trash2, X, Loader, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Search, Users as UsersIcon, Phone, Mail, Plus, Edit3, Trash2, X, Loader, ChevronLeft, ChevronRight, CalendarDays, ShieldCheck, ShieldX, Clock, AlertCircle } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { api } from "../services/apiClient";
@@ -10,6 +10,12 @@ const roleColors = {
   tenant: "bg-primary/10 text-primary ring-1 ring-primary/30",
   lessor: "bg-accent/10 text-accent ring-1 ring-accent/30",
   admin: "bg-primary-dark/10 text-primary-dark ring-1 ring-primary-dark/30",
+};
+const verifiedLabels = { none: "غير موثّق", pending: "قيد المراجعة", verified: "موثّق" };
+const verifiedColors = {
+  none: "bg-gray-50 text-gray-500 ring-1 ring-gray-200",
+  pending: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+  verified: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
 };
 const avatarColors = [
   "from-primary to-primary-dark",
@@ -121,9 +127,13 @@ function UserModal({ user, onClose, onSaved }) {
 
 export default function Users() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("all");
+  const [filterVerified, setFilterVerified] = useState(() => {
+    return searchParams.get("verified") || "all";
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -137,13 +147,14 @@ export default function Users() {
 
   const filtered = users
     .filter(u => filterRole === "all" || u.role === filterRole)
+    .filter(u => filterVerified === "all" || u.verified === filterVerified)
     .filter(u => u.name.includes(search) || u.phone.includes(search) || (u.email || "").includes(search));
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages - 1);
   const paged = filtered.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
 
-  useEffect(() => { setPage(0); }, [search, filterRole]);
+  useEffect(() => { setPage(0); }, [search, filterRole, filterVerified]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -213,6 +224,15 @@ export default function Users() {
                 {r === "all" ? "الكل" : roleLabels[r]}
               </button>
             ))}
+            <span className="w-px h-6 bg-gray-200 self-center" />
+            {["all", "none", "pending", "verified"].map(v => (
+              <button key={v} onClick={() => setFilterVerified(v)}
+                className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                  filterVerified === v ? "bg-primary text-white shadow-sm" : "bg-gray-50 text-gray-500 border border-gray-200/80 hover:border-gray-300"
+                }`}>
+                {v === "all" ? "الكل" : verifiedLabels[v]}
+              </button>
+            ))}
           </div>
           <button onClick={openCreate}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-white shadow-sm hover:bg-primary-dark transition-all active:scale-[0.97] shrink-0">
@@ -230,6 +250,7 @@ export default function Users() {
                 <th className="text-right p-3 font-semibold"><Phone className="w-3 h-3 inline ml-1" />رقم الجوال</th>
                 <th className="text-right p-3 font-semibold"><Mail className="w-3 h-3 inline ml-1" />البريد</th>
                 <th className="text-right p-3 font-semibold">نوع الحساب</th>
+                <th className="text-right p-3 font-semibold">التوثيق</th>
                 <th className="text-right p-3 font-semibold"><CalendarDays className="w-3 h-3 inline ml-1" />التسجيل</th>
                 <th className="text-center p-3 font-semibold">إجراءات</th>
               </tr>
@@ -257,9 +278,43 @@ export default function Users() {
                       {roleLabels[user.role]}
                     </span>
                   </td>
+                  <td className="p-3">
+                    <span className={`badge gap-1 ${verifiedColors[user.verified] || verifiedColors.none}`}>
+                      {user.verified === "verified" ? <ShieldCheck className="w-3 h-3" /> :
+                       user.verified === "pending" ? <Clock className="w-3 h-3" /> :
+                       <AlertCircle className="w-3 h-3" />}
+                      {verifiedLabels[user.verified] || "غير موثّق"}
+                    </span>
+                  </td>
                   <td className="p-3 text-gray-400 text-xs whitespace-nowrap">{user.created_at?.slice(0, 10)}</td>
                   <td className="p-3">
                     <div className="flex items-center justify-center gap-1">
+                      {user.verified === "pending" && (
+                        <>
+                          <button onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              await api.post(`/admin/users/${user.id}/verify`, { action: "approve" });
+                              fetchUsers();
+                            } catch {}
+                          }}
+                            className="p-1.5 rounded-lg text-emerald-500 hover:bg-emerald-50 transition-all"
+                            title="توثيق">
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              await api.post(`/admin/users/${user.id}/verify`, { action: "reject" });
+                              fetchUsers();
+                            } catch {}
+                          }}
+                            className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 transition-all"
+                            title="رفض">
+                            <ShieldX className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
                       <button onClick={e => { e.stopPropagation(); openEdit(user); }}
                         className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/5 transition-all"
                         title="تعديل">

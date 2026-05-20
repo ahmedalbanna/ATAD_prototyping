@@ -1,11 +1,13 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { api } from "../services/apiClient";
 import { useAuth } from "./AuthContext";
+import { useToast } from "./ToastContext";
 
 const BookingContext = createContext(null);
 
 export function BookingProvider({ children }) {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [bookings, setBookings] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [creating, setCreating] = useState(false);
@@ -55,12 +57,13 @@ export function BookingProvider({ children }) {
         const key = `${n.id}-${n.is_read}`;
         if (!n.is_read && !notifiedRef.current.has(key)) {
           notifiedRef.current.add(key);
+          showToast(n.title, n.type === "system" ? "info" : "info");
         }
       });
     } catch {
       // API unavailable
     }
-  }, [user]);
+  }, [user, showToast]);
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
   useEffect(() => { fetchNotifications(); }, [fetchNotifications]);

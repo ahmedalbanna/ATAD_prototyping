@@ -30,14 +30,14 @@ export async function verifyOtp(phone, otp) {
   UserModel.updateOtp(user.id, null, null);
 
   const token = jwt.sign(
-    { id: user.id, phone: user.phone, role: user.role, name: user.name },
+    { id: user.id, phone: user.phone, role: user.role, name: user.name, verified: user.verified },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN },
   );
 
   return {
     token,
-    user: { id: user.id, name: user.name, phone: user.phone, role: user.role },
+    user: { id: user.id, name: user.name, phone: user.phone, role: user.role, verified: user.verified },
   };
 }
 

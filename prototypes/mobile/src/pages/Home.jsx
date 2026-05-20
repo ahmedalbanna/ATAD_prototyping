@@ -55,19 +55,29 @@ export default function Home() {
   return (
     <Layout title="عتاد">
       {/* Role-aware banner with tagline */}
-      <div className="bg-gradient-to-br from-primary via-primary-dark to-[#7a0e0d] rounded-2xl p-5 text-white mb-5 shadow-lg relative overflow-hidden">
+      <div className="bg-gradient-to-br from-primary via-primary-dark to-[#7a0e0d] rounded-2xl p-6 text-white mb-5 shadow-lg relative overflow-hidden">
         <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/5 rounded-full" />
         <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-accent/10 rounded-full" />
+        <div className="absolute top-1/2 -translate-y-1/2 left-6 text-[80px] font-black text-white/[0.03] select-none">عتاد</div>
         <div className="relative z-10">
-          <p className="text-white/60 text-xs mb-0.5">
+          <p className="text-white/60 text-xs mb-1">
             {user ? `أهلاً، ${user.name}` : "أهلاً بك في"}
           </p>
-          <h2 className="text-2xl font-black mb-1 leading-tight">عتاد</h2>
-          <p className="text-accent font-bold text-sm mb-2">الوصول أسهل من التملك</p>
-          <div className="flex flex-wrap gap-3 text-[10px] text-white/70 mb-3">
-            <span className="flex items-center gap-1">✓ معدات متنوعة</span>
-            <span className="flex items-center gap-1">✓ تأجير مرن</span>
-            <span className="flex items-center gap-1">✓ توصيل سريع</span>
+          <h2 className="text-3xl font-black mb-1 leading-tight">عتاد</h2>
+          <p className="text-accent font-bold text-sm mb-1">الوصول أسهل من التملك</p>
+          <p className="text-white/60 text-[11px] mb-3 leading-relaxed">
+            أول منصة سعودية لتأجير الأجهزة والمعدات — استأجر ما تحتاجه بأمان وثقة، بدون عناء التملك
+          </p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <span className="flex items-center gap-1 bg-white/10 text-[10px] px-2.5 py-1 rounded-full text-white/80">
+              <ShieldCheck className="w-3 h-3" /> مستخدمون موثّقون
+            </span>
+            <span className="flex items-center gap-1 bg-white/10 text-[10px] px-2.5 py-1 rounded-full text-white/80">
+              <FileSignature className="w-3 h-3" /> عقود إلكترونية
+            </span>
+            <span className="flex items-center gap-1 bg-white/10 text-[10px] px-2.5 py-1 rounded-full text-white/80">
+              ⭐ تقييمات شفافة
+            </span>
           </div>
           {isLessor ? (
             <div className="flex items-center gap-4 mt-2">
@@ -82,7 +92,7 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <p className="text-white/70 text-sm">استأجر المعدات والأدوات التي تحتاجها</p>
+            <p className="text-white/70 text-sm">استأجر الأجهزة والمعدات التي تحتاجها، وادفع فقط مقابل ما تستخدم</p>
           )}
           <div className="flex gap-2 mt-3">
             <Link to="/assets"
@@ -102,16 +112,16 @@ export default function Home() {
       {/* Trust bar */}
       <div className="trust-bar mb-5">
         {[
-          { icon: ShieldCheck, label: "توثيق", desc: "هوية موثقة" },
-          { icon: FileSignature, label: "عقود", desc: "إلكترونية آمنة" },
-          { icon: MessageSquare, label: "تقييمات", desc: "مراجعات شفافة" },
-        ].map(({ icon: Icon, label, desc }) => (
-          <div key={label} className="trust-bar-item">
-            <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center">
-              <Icon className="w-4 h-4 text-primary" />
+          { icon: ShieldCheck, label: "توثيق", desc: "جميع المستخدمين موثّقون بهوية حقيقية", color: "from-emerald-500/10 to-emerald-500/5 border-emerald-200/50" },
+          { icon: FileSignature, label: "عقود إلكترونية", desc: "عقود تأجير إلكترونية آمنة وقانونية", color: "from-blue-500/10 to-blue-500/5 border-blue-200/50" },
+          { icon: MessageSquare, label: "تقييمات شفافة", desc: "تقييمات حقيقية من مستخدمين سابقين", color: "from-amber-500/10 to-amber-500/5 border-amber-200/50" },
+        ].map(({ icon: Icon, label, desc, color }) => (
+          <div key={label} className={`trust-bar-item bg-gradient-to-br ${color}`}>
+            <div className="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shadow-sm">
+              <Icon className="w-4.5 h-4.5 text-primary" />
             </div>
             <span className="text-[11px] font-bold text-gray-800">{label}</span>
-            <span className="text-[9px] text-gray-400">{desc}</span>
+            <span className="text-[9px] text-gray-400 leading-relaxed px-1">{desc}</span>
           </div>
         ))}
       </div>

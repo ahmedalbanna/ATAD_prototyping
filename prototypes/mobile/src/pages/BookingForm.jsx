@@ -6,6 +6,7 @@ import { useBookings } from "../context/BookingContext";
 import { useToast } from "../context/ToastContext";
 import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
+import AvailabilityCalendar from "../components/AvailabilityCalendar";
 
 export default function BookingForm() {
   const { id } = useParams();
@@ -82,22 +83,27 @@ export default function BookingForm() {
           <h3 className="font-bold text-sm text-gray-900 flex items-center gap-2">
             <CalendarDays className="w-4 h-4 text-primary" /> تحديد المدة
           </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">تاريخ البداية</label>
-              <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); if (errors.startDate) setErrors(p => { const n = { ...p }; delete n.startDate; return n; }); }}
-                min={new Date().toISOString().split("T")[0]}
-                className={`w-full p-3 border rounded-xl focus:outline-none transition-all text-sm ${errors.startDate ? "border-red-300 bg-red-50/50" : "border-gray-200 bg-gray-50/50 focus:border-primary"}`} />
-              {errors.startDate && <p className="text-xs text-red-500 mt-1">{errors.startDate}</p>}
+
+          <AvailabilityCalendar
+            assetId={id}
+            startDate={startDate}
+            endDate={endDate}
+            onChangeStart={(v) => { setStartDate(v); if (errors.startDate) setErrors(p => { const n = { ...p }; delete n.startDate; return n; }); }}
+            onChangeEnd={(v) => { setEndDate(v); if (errors.endDate) setErrors(p => { const n = { ...p }; delete n.endDate; return n; }); }}
+          />
+
+          {startDate && endDate && (
+            <div className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2 text-xs">
+              <span className="text-gray-500">من <span className="font-semibold text-gray-700">{startDate}</span> إلى <span className="font-semibold text-gray-700">{endDate}</span></span>
+              <button type="button" onClick={() => { setStartDate(""); setEndDate(""); }}
+                className="text-red-400 hover:text-red-500 font-semibold transition-colors">
+                إلغاء
+              </button>
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">تاريخ النهاية</label>
-              <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); if (errors.endDate) setErrors(p => { const n = { ...p }; delete n.endDate; return n; }); }}
-                min={startDate || new Date().toISOString().split("T")[0]}
-                className={`w-full p-3 border rounded-xl focus:outline-none transition-all text-sm ${errors.endDate ? "border-red-300 bg-red-50/50" : "border-gray-200 bg-gray-50/50 focus:border-primary"}`} />
-              {errors.endDate && <p className="text-xs text-red-500 mt-1">{errors.endDate}</p>}
-            </div>
-          </div>
+          )}
+
+          {errors.startDate && <p className="text-xs text-red-500">{errors.startDate}</p>}
+          {errors.endDate && <p className="text-xs text-red-500">{errors.endDate}</p>}
         </div>
 
         {days > 0 && (

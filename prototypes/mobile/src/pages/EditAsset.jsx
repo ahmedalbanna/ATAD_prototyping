@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ImagePlus, Tag, FileText, MapPin, ListTree, Save } from "lucide-react";
 import Layout from "../components/Layout";
+import ImageCropper from "../components/ImageCropper";
 import { api } from "../services/apiClient";
 import { useToast } from "../context/ToastContext";
 import { categories } from "../data/mock";
@@ -25,6 +26,8 @@ export default function EditAsset() {
   const [preview, setPreview] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [cropSrc, setCropSrc] = useState(null);
+  const [cropFile, setCropFile] = useState(null);
 
   useEffect(() => {
     api.get(`/assets/${id}`).then(data => {
@@ -46,6 +49,21 @@ export default function EditAsset() {
   const update = (f, v) => {
     setForm(p => ({ ...p, [f]: v }));
     if (errors[f]) setErrors(p => { const n = { ...p }; delete n[f]; return n; });
+  };
+
+  const handleCrop = (cropped) => {
+    setSelectedFile(cropped);
+    const reader = new FileReader();
+    reader.onload = ev => setPreview(ev.target.result);
+    reader.readAsDataURL(cropped);
+    setCropSrc(null);
+    setCropFile(null);
+  };
+
+  const cancelCrop = () => {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+    setCropFile(null);
   };
 
   const handleSubmit = async (e) => {
@@ -119,12 +137,22 @@ export default function EditAsset() {
             <input type="file" accept="image/*" ref={fileRef} className="hidden"
               onChange={e => {
                 const file = e.target.files?.[0];
-                if (file) {
-                  setSelectedFile(file);
-                  const reader = new FileReader();
-                  reader.onload = ev => setPreview(ev.target.result);
-                  reader.readAsDataURL(file);
-                }
+                if (!file) return;
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                  if (img.naturalWidth < 400 || img.naturalHeight < 300) {
+                    setCropFile(file);
+                    setCropSrc(url);
+                  } else {
+                    URL.revokeObjectURL(url);
+                    setSelectedFile(file);
+                    const reader = new FileReader();
+                    reader.onload = ev => setPreview(ev.target.result);
+                    reader.readAsDataURL(file);
+                  }
+                };
+                img.src = url;
               }} />
             <div onClick={() => fileRef.current?.click()}
               className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all group ${
@@ -217,6 +245,9 @@ export default function EditAsset() {
           {saving ? "جاري الحفظ..." : "حفظ التغييرات"}
         </button>
       </form>
+      {cropSrc && (
+        <ImageCropper imageSrc={cropSrc} onCrop={handleCrop} onCancel={cancelCrop} />
+      )}
     </Layout>
   );
 }

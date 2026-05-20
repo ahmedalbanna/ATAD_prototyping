@@ -15,7 +15,7 @@
     "format": "prettier --write src/ tests/",
     "migrate": "node migrations/run.js",
     "seed": "node seeds/run.js",
-    "reset": "node migrations/run.js && node seeds/run.js"
+    "reset": "rm -f data/atad.db && node migrations/run.js && node seeds/run.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",

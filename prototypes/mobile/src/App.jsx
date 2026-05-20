@@ -25,6 +25,7 @@ import LessorEarnings from "./pages/LessorEarnings";
 import Notifications from "./pages/Notifications";
 import Terms from "./pages/Terms";
 import Profile from "./pages/Profile";
+import Verification from "./pages/Verification";
 
 export default function App() {
   return (
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/verification" element={<Verification />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
       </BookingProvider>

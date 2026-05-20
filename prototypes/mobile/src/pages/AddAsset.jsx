@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImagePlus, Tag, FileText, MapPin, ListTree } from "lucide-react";
 import Layout from "../components/Layout";
+import ImageCropper from "../components/ImageCropper";
 import { api } from "../services/apiClient";
 import { useToast } from "../context/ToastContext";
 import { categories } from "../data/mock";
@@ -21,6 +22,23 @@ export default function AddAsset() {
   const fileRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [cropSrc, setCropSrc] = useState(null);
+  const [cropFile, setCropFile] = useState(null);
+
+  const handleCrop = (cropped) => {
+    setSelectedFile(cropped);
+    const reader = new FileReader();
+    reader.onload = ev => setPreview(ev.target.result);
+    reader.readAsDataURL(cropped);
+    setCropSrc(null);
+    setCropFile(null);
+  };
+
+  const cancelCrop = () => {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+    setCropFile(null);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -82,12 +100,22 @@ export default function AddAsset() {
           <input type="file" accept="image/*" ref={fileRef} className="hidden"
             onChange={e => {
               const file = e.target.files?.[0];
-              if (file) {
-                setSelectedFile(file);
-                const reader = new FileReader();
-                reader.onload = ev => setPreview(ev.target.result);
-                reader.readAsDataURL(file);
-              }
+              if (!file) return;
+              const img = new Image();
+              const url = URL.createObjectURL(file);
+              img.onload = () => {
+                if (img.naturalWidth < 400 || img.naturalHeight < 300) {
+                  setCropFile(file);
+                  setCropSrc(url);
+                } else {
+                  URL.revokeObjectURL(url);
+                  setSelectedFile(file);
+                  const reader = new FileReader();
+                  reader.onload = ev => setPreview(ev.target.result);
+                  reader.readAsDataURL(file);
+                }
+              };
+              img.src = url;
             }} />
           <div onClick={() => fileRef.current?.click()}
             className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all group ${
@@ -172,6 +200,9 @@ export default function AddAsset() {
           {saving ? "جاري الإضافة..." : "إضافة الأصل"}
         </button>
       </form>
+      {cropSrc && (
+        <ImageCropper imageSrc={cropSrc} onCrop={handleCrop} onCancel={cancelCrop} />
+      )}
     </Layout>
   );
 }

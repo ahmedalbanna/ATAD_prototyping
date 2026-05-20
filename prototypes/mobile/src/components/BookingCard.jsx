@@ -83,8 +83,8 @@ export default function BookingCard({ booking, actions }) {
             <span className="font-black text-sm bg-gradient-to-l from-primary to-accent bg-clip-text text-transparent">
               {booking.total_price} ﷼
             </span>
-            <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-medium border ${style.bg} ${style.text} border-current/20`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${statusDot}`} />
+            <span className={`inline-flex items-center gap-1.5 text-[12px] px-3 py-1 rounded-full font-bold border-2 ${style.bg} ${style.text} border-current/20 shadow-sm`}>
+              <span className={`w-2 h-2 rounded-full ${statusDot} ${booking.status === "active" ? "animate-pulse" : ""}`} />
               {statusLabels[booking.status]}
             </span>
           </div>

@@ -4,6 +4,7 @@ import { query } from "../config/database.js";
 import * as BookingModel from "../models/Booking.js";
 import * as UserModel from "../models/User.js";
 import * as AssetModel from "../models/Asset.js";
+import * as VerificationDocModel from "../models/VerificationDoc.js";
 import * as PaymentService from "../services/payment.js";
 
 const router = Router();
@@ -18,6 +19,7 @@ router.get("/stats", (req, res) => {
   const activeRentals = query("SELECT COUNT(*) AS c FROM bookings WHERE status = 'active'").rows[0].c;
   const pendingBookings = query("SELECT COUNT(*) AS c FROM bookings WHERE status = 'pending'").rows[0].c;
   const revenue = query("SELECT COALESCE(SUM(amount),0) AS t FROM payments WHERE status='paid'").rows[0].t;
+  const pendingVerifications = query("SELECT COUNT(*) AS c FROM users WHERE verified = 'pending'").rows[0].c;
 
   res.json({
     success: true,
@@ -28,12 +30,13 @@ router.get("/stats", (req, res) => {
       active_rentals: activeRentals,
       revenue: parseFloat(revenue),
       pending_bookings: pendingBookings,
+      pending_verifications: pendingVerifications,
     },
   });
 });
 
 router.get("/users", (req, res) => {
-  const users = UserModel.findAll(req.query.search, req.query.role);
+  const users = UserModel.findAll(req.query.search, req.query.role, req.query.verified);
   res.json({ success: true, data: users });
 });
 
@@ -76,6 +79,47 @@ router.delete("/users/:id", (req, res) => {
 
   UserModel.deleteUser(req.params.id);
   res.json({ success: true, data: { id: req.params.id } });
+});
+
+// Get user verification documents (for admin review)
+router.get("/users/:id/verification-docs", (req, res) => {
+  const existing = UserModel.findById(req.params.id);
+  if (!existing) return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "المستخدم غير موجود" } });
+
+  const docs = VerificationDocModel.findByUser(req.params.id);
+  res.json({ success: true, data: docs });
+});
+
+// Verify/reject user verification
+router.post("/users/:id/verify", (req, res) => {
+  const existing = UserModel.findById(req.params.id);
+  if (!existing) return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "المستخدم غير موجود" } });
+
+  const { action } = req.body; // "approve" or "reject"
+  if (!action || !["approve", "reject"].includes(action)) {
+    return res.status(400).json({ success: false, error: { code: "VALIDATION_ERROR", message: "الإجراء مطلوب (approve أو reject)" } });
+  }
+
+  const verified = action === "approve" ? "verified" : "none";
+  const user = UserModel.updateUser(req.params.id, { verified });
+
+  // Create notification for user
+  try {
+    query(
+      "INSERT INTO notifications (id, user_id, type, title, message, is_read) VALUES (?, ?, 'system', ?, ?, 0)",
+      [
+        require("node:crypto").randomUUID(),
+        req.params.id,
+        action === "approve" ? "تم توثيق حسابك" : "تم رفض طلب التوثيق",
+        action === "approve"
+          ? "تم توثيق حسابك في عتاد بنجاح، يمكنك الآن استئجار الأصول"
+          : "عذراً، تم رفض طلب توثيق حسابك. يمكنك التواصل مع الدعم للمزيد من المعلومات",
+      ],
+    );
+  } catch {}
+
+  const { otp_code: _otp, otp_expires_at: _exp, password: _pw, ...safe } = user;
+  res.json({ success: true, data: safe });
 });
 
 router.get("/users/:id", (req, res) => {

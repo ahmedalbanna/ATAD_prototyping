@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Phone, CalendarDays, Package, ClipboardList, ArrowRight, Edit3, Trash2, X, Loader } from "lucide-react";
+import { Phone, CalendarDays, Package, ClipboardList, ArrowRight, Edit3, Trash2, X, Loader, ShieldCheck, ShieldX, Clock, AlertCircle, ImageIcon } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { api } from "../services/apiClient";
 import { statusLabels, statusColors } from "../data/mock";
+
+const BASE_URL = import.meta.env.VITE_API_URL || "http://185.190.140.93:3001/api/v1";
+const API_HOST = BASE_URL.replace("/api/v1", "");
 
 const roleLabels = { tenant: "مستأجر", lessor: "مؤجر", admin: "مدير" };
 const roleColors = {
@@ -13,6 +16,12 @@ const roleColors = {
   admin: "bg-primary-dark/10 text-primary-dark ring-1 ring-primary-dark/30",
 };
 const roles = ["tenant", "lessor", "admin"];
+const verifiedLabels = { none: "غير موثّق", pending: "قيد المراجعة", verified: "موثّق" };
+const verifiedColors = {
+  none: "bg-gray-50 text-gray-500 ring-1 ring-gray-200",
+  pending: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+  verified: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+};
 
 function EditUserModal({ user, onClose, onSaved }) {
   const [name, setName] = useState(user?.name || "");
@@ -99,12 +108,23 @@ export default function AdminUserDetail() {
   const [data, setData] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [verificationDocs, setVerificationDocs] = useState([]);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const fetchData = () => {
     api.get(`/admin/users/${id}`).then(setData).catch(() => setData(null));
   };
 
+  const fetchDocs = () => {
+    api.get(`/admin/users/${id}/verification-docs`).then(setVerificationDocs).catch(() => setVerificationDocs([]));
+  };
+
   useEffect(() => { fetchData(); }, [id]);
+
+  useEffect(() => {
+    if (data?.user?.verified && data.user.verified !== "none") fetchDocs();
+    else setVerificationDocs([]);
+  }, [data?.user?.verified]);
 
   const handleDelete = async () => {
     try {
@@ -163,12 +183,67 @@ export default function AdminUserDetail() {
                 <span className="text-gray-500">الحجوزات</span>
                 <span className="font-bold text-gray-900">{bookings?.length || 0}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">حالة الحساب</span>
-                <span className="badge bg-emerald-50 text-emerald-600">نشط</span>
+              <div className="flex justify-between text-sm items-center">
+                <span className="text-gray-500">التوثيق</span>
+                <span className={`badge ${verifiedColors[user.verified] || verifiedColors.none}`}>
+                  {verifiedLabels[user.verified] || "غير موثّق"}
+                </span>
               </div>
+              {user.verified === "pending" && (
+                <div className="flex gap-2 pt-1">
+                  <button onClick={async (e) => { e.stopPropagation(); await api.post(`/admin/users/${user.id}/verify`, { action: "approve" }); fetchData(); }}
+                    className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all">
+                    <ShieldCheck className="w-3.5 h-3.5" /> توثيق
+                  </button>
+                  <button onClick={async (e) => { e.stopPropagation(); await api.post(`/admin/users/${user.id}/verify`, { action: "reject" }); fetchData(); }}
+                    className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-xl text-xs font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all">
+                    <ShieldX className="w-3.5 h-3.5" /> رفض
+                  </button>
+                </div>
+              )}
             </div>
           </div>
+
+          {verificationDocs.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <h3 className="font-bold text-sm text-gray-900 mb-3 flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-primary" /> مستندات التوثيق
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {verificationDocs.map(doc => {
+                  const filename = doc.image_url.split("/").pop();
+                  return (
+                  <button key={doc.id} onClick={() => setPreviewUrl(`${API_HOST}/uploads/${filename}`)}
+                    className="aspect-[4/3] rounded-xl overflow-hidden border border-gray-200 hover:border-primary/30 hover:shadow-md transition-all group relative">
+                    <img src={`${API_HOST}/uploads/${filename}`} alt={doc.doc_type}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <span className="absolute bottom-0 right-0 left-0 bg-gradient-to-t from-black/60 to-transparent p-1.5">
+                      <span className="text-[10px] text-white font-semibold">
+                        {doc.doc_type === "id_front" ? "وجه البطاقة" :
+                         doc.doc_type === "id_back" ? "خلف البطاقة" :
+                         doc.doc_type === "selfie" ? "صورة شخصية" : "مستند"}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+              </div>
+            </div>
+          )}
+
+          {/* Image lightbox */}
+          {previewUrl && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+              onClick={() => setPreviewUrl(null)}>
+              <div className="relative max-w-lg w-full max-h-[80vh]" onClick={e => e.stopPropagation()}>
+                <img src={previewUrl} className="w-full h-auto rounded-2xl shadow-2xl" />
+                <button onClick={() => setPreviewUrl(null)}
+                  className="absolute -top-3 -left-3 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:rotate-90 transition-transform">
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="lg:col-span-2 space-y-4">

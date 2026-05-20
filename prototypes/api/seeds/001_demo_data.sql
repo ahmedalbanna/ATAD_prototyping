@@ -1,9 +1,9 @@
-INSERT OR IGNORE INTO users (id, name, phone, role, email, password) VALUES
-  ('a0000000-0000-0000-0000-000000000001', 'أحمد الحربي', '+966555123456', 'tenant', NULL, NULL),
-  ('a0000000-0000-0000-0000-000000000002', 'سارة القحطاني', '+966555654321', 'lessor', NULL, NULL),
-  ('a0000000-0000-0000-0000-000000000003', 'خالد المدير', '+966555000000', 'admin', 'admin@atad.sa', '$2b$10$wtusz1kwvPITVENPEOn3UuMWEfwarpmYENPqaUd.Gy/x5FlSkXK.S'),
-  ('a0000000-0000-0000-0000-000000000004', 'فهد الدوسري', '+966555111222', 'tenant', NULL, NULL),
-  ('a0000000-0000-0000-0000-000000000005', 'نورة الشمري', '+966555333444', 'lessor', NULL, NULL);
+INSERT OR IGNORE INTO users (id, name, phone, role, email, password, verified) VALUES
+  ('a0000000-0000-0000-0000-000000000001', 'أحمد الحربي', '+966555123456', 'tenant', NULL, NULL, 'verified'),
+  ('a0000000-0000-0000-0000-000000000002', 'سارة القحطاني', '+966555654321', 'lessor', NULL, NULL, 'verified'),
+  ('a0000000-0000-0000-0000-000000000003', 'خالد المدير', '+966555000000', 'admin', 'admin@atad.sa', '$2b$10$wtusz1kwvPITVENPEOn3UuMWEfwarpmYENPqaUd.Gy/x5FlSkXK.S', 'verified'),
+  ('a0000000-0000-0000-0000-000000000004', 'فهد الدوسري', '+966555111222', 'tenant', NULL, NULL, 'verified'),
+  ('a0000000-0000-0000-0000-000000000005', 'نورة الشمري', '+966555333444', 'lessor', NULL, NULL, 'verified');
 
 INSERT OR IGNORE INTO assets (id, owner_id, title, description, category, price_per_day, city, image_url, status, rating) VALUES
   ('b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000002', 'لابتوب محمول', 'لابتوب محمول عالي الأداء مناسب للعمل عن بعد والمهام المكتبية, مع معالج قوي وذاكرة كبيرة.', 'أجهزة تقنية', 150, 'الرياض', 'https://m.media-amazon.com/images/I/71vFKBpKakL._AC_SL1500_.jpg', 'available', 4.5),

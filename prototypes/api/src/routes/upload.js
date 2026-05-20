@@ -40,14 +40,15 @@ router.post("/", authenticate, async (req, res) => {
     }
 
     try {
-      const { probe } = await import("probe-image-size");
+      const probe = (await import("probe-image-size")).default;
       const filePath = req.file.path;
       const input = fs.createReadStream(filePath);
+      input.on("error", () => input.destroy());
       const dimensions = await probe(input);
       input.destroy();
 
       if (dimensions.width < MIN_WIDTH || dimensions.height < MIN_HEIGHT) {
-        fs.unlinkSync(filePath);
+        try { fs.unlinkSync(filePath); } catch { /* file may already be gone */ }
         return res.status(400).json({
           success: false,
           error: {
@@ -61,7 +62,7 @@ router.post("/", authenticate, async (req, res) => {
       const url = `/uploads/${req.file.filename}`;
       res.json({ success: true, data: { url } });
     } catch (checkErr) {
-      fs.unlinkSync(req.file.path);
+      try { fs.unlinkSync(req.file.path); } catch { /* file may already be gone */ }
       return res.status(400).json({ success: false, error: { code: "IMAGE_CHECK_FAILED", message: "تعذر التحقق من أبعاد الصورة" } });
     }
   });

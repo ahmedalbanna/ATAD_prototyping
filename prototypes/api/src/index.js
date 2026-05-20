@@ -12,6 +12,7 @@ import paymentRoutes from "./routes/payments.js";
 import ratingRoutes from "./routes/ratings.js";
 import adminRoutes from "./routes/admin.js";
 import notificationRoutes from "./routes/notifications.js";
+import userRoutes from "./routes/users.js";
 import uploadRoutes from "./routes/upload.js";
 
 const app = express();
@@ -40,6 +41,7 @@ app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/ratings", ratingRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/upload", uploadRoutes);
 
 // 404 handler

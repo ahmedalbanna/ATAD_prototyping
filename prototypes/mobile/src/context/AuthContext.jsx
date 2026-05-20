@@ -103,6 +103,25 @@ export function AuthProvider({ children }) {
   const isTenant = user?.role === "tenant";
   const isLoggedIn = !!user;
 
+  const requestVerification = useCallback(async () => {
+    try {
+      const result = await api.post("/users/me/verification");
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    try {
+      const result = await api.get("/users/me");
+      setUser(result);
+      return result;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const can = useCallback((action) => {
     if (!user) return false;
     const permissions = {
@@ -115,11 +134,17 @@ export function AuthProvider({ children }) {
     return permissions[action] ?? false;
   }, [user]);
 
+  const isVerified = user?.verified === "verified";
+  const isVerificationPending = user?.verified === "pending";
+  const canBook = isTenant && isVerified;
+
   return (
     <AuthContext.Provider value={{
       user, login, logout, switchUser, loading, initialized,
       sendOtp, verifyOtp,
+      requestVerification, refreshUser,
       isLessor, isTenant, isLoggedIn, isRealAccount,
+      isVerified, isVerificationPending, canBook,
       roleLabel: roleLabels[user?.role] || "",
       defaultRoute: roleRoutes[user?.role] || "/home",
       can,

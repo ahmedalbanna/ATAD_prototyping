@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as AssetService from "../services/asset.js";
 import { authenticate, requireRole } from "../middleware/auth.js";
+import * as BookingModel from "../models/Booking.js";
 
 const router = Router();
 
@@ -19,6 +20,27 @@ router.get("/:id", async (req, res, next) => {
   try {
     const asset = await AssetService.getAsset(req.params.id);
     res.json({ success: true, data: asset });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Get asset availability (booked ranges)
+router.get("/:id/availability", async (req, res, next) => {
+  try {
+    const asset = await AssetService.getAsset(req.params.id);
+    if (!asset) return res.status(404).json({ success: false, error: { code: "NOT_FOUND", message: "الأصل غير موجود" } });
+
+    const start = req.query.start || new Date().toISOString().split("T")[0];
+    const end = req.query.end || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+    const bookings = BookingModel.findByAssetAndPeriod(req.params.id, start, end);
+    res.json({ success: true, data: bookings.map(b => ({
+      id: b.id,
+      start_date: b.start_date,
+      end_date: b.end_date,
+      status: b.status,
+    }))});
   } catch (err) {
     next(err);
   }

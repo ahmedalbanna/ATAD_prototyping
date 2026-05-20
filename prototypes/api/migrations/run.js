@@ -13,8 +13,16 @@ try {
 
   for (const file of files) {
     const sql = fs.readFileSync(path.join(__dirname, file), "utf8");
-    exec(sql);
-    console.log(`Migration ${file} applied successfully`);
+    try {
+      exec(sql);
+      console.log(`Migration ${file} applied successfully`);
+    } catch (err) {
+      if (err.message.includes("duplicate column name")) {
+        console.log(`Migration ${file} skipped (column already exists)`);
+      } else {
+        throw err;
+      }
+    }
   }
 } catch (err) {
   console.error("Migration failed:", err.message);

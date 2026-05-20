@@ -1,20 +1,27 @@
 import { useNavigate } from "react-router-dom";
-import { ClipboardList, FileText, Info, LogOut, ChevronLeft, Wallet, Package, Edit3, Compass, ShieldCheck, Star, CalendarDays } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ClipboardList, FileText, Info, LogOut, ChevronLeft, Wallet, Package, Edit3, Compass, ShieldCheck, Star, CalendarDays, Clock, AlertCircle } from "lucide-react";
 import Layout from "../components/Layout";
 import { useAuth } from "../context/AuthContext";
+import { api } from "../services/apiClient";
 
 const roleLabels = { tenant: "مستأجر", lessor: "مؤجر" };
 const verifiedLevels = { none: "غير موثّق", pending: "قيد التوثيق", verified: "موثّق" };
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, logout, isLessor } = useAuth();
+  const { user, logout, isLessor, isVerified, isVerificationPending, refreshUser } = useAuth();
+  const [stats, setStats] = useState({ rating: 0, total_ratings: 0, completed_bookings: 0, total_bookings: 0 });
+
+  useEffect(() => {
+    refreshUser();
+    api.get("/users/me/stats").then(setStats).catch(() => {});
+  }, []);
 
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString("ar-SA", { year: "numeric", month: "long" })
     : null;
-  const verifiedLevel = user?.verified || "verified";
-  const isVerified = verifiedLevel === "verified";
+  const verifiedLevel = user?.verified || "none";
 
   const menuItems = isLessor
     ? [
@@ -28,6 +35,7 @@ export default function Profile() {
     ]
     : [
       { label: "تعديل البيانات", icon: Edit3, desc: "الاسم، رقم الجوال", to: "/edit-profile" },
+      ...(!isVerified ? [{ label: "توثيق الحساب", icon: ShieldCheck, desc: isVerificationPending ? "طلبك قيد المراجعة" : "فعّل حسابك لاستئجار الأصول", to: "/verification" }] : []),
       { label: "دليل الاستخدام", icon: Compass, desc: "شرح التطبيق والبدء السريع", to: "/onboarding/tenant" },
       { label: "طلباتي", icon: ClipboardList, desc: "جميع طلبات التأجير", to: "/bookings" },
       { label: "الشروط والأحكام", icon: FileText, desc: "سياسة الاستخدام", to: "/terms" },
@@ -60,13 +68,26 @@ export default function Profile() {
               {roleLabels[user.role]}
             </span>
           </div>
-          {isVerified && (
-            <div className="flex items-center justify-center gap-1.5 mt-2">
+          <div className="flex items-center justify-center gap-1.5 mt-2">
+            {isVerified ? (
               <span className="trust-badge bg-white/15 text-white/90 border-white/20 text-[10px]">
                 <ShieldCheck className="w-2.5 h-2.5" /> {verifiedLevels[verifiedLevel]}
               </span>
-            </div>
-          )}
+            ) : (
+              <button onClick={() => navigate("/verification")}
+                className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border transition-all ${
+                  isVerificationPending
+                    ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                    : "bg-white/15 text-white/90 border-white/20 hover:bg-white/25"
+                }`}>
+                {isVerificationPending ? (
+                  <><Clock className="w-2.5 h-2.5" /> {verifiedLevels[verifiedLevel]}</>
+                ) : (
+                  <><AlertCircle className="w-2.5 h-2.5" /> {verifiedLevels[verifiedLevel]} — توثيق الآن</>
+                )}
+              </button>
+            )}
+          </div>
           {memberSince && (
             <div className="flex items-center justify-center gap-1 mt-2 text-white/50 text-[10px]">
               <CalendarDays className="w-3 h-3" />
@@ -82,23 +103,36 @@ export default function Profile() {
           <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center mx-auto mb-1.5">
             <Star className="w-4 h-4 text-amber-600" />
           </div>
-          <p className="stat-value">0</p>
-          <p className="stat-label">تقييم</p>
+          <p className="stat-value">{stats.rating > 0 ? stats.rating.toFixed(1) : "—"}</p>
+          <p className="stat-label">{stats.total_ratings > 0 ? `${stats.total_ratings} تقييم` : "تقييم"}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-100/80 p-3 text-center shadow-sm">
           <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center mx-auto mb-1.5">
             <ClipboardList className="w-4 h-4 text-blue-600" />
           </div>
-          <p className="stat-value">0</p>
-          <p className="stat-label">عمليات</p>
+          <p className="stat-value">{stats.completed_bookings}</p>
+          <p className="stat-label">{stats.completed_bookings > 0 ? "عملية مكتملة" : "عمليات"}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-100/80 p-3 text-center shadow-sm">
-          <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center mx-auto mb-1.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+        <button onClick={() => !isVerified && navigate("/verification")}
+          className={`bg-white rounded-xl border p-3 text-center shadow-sm ${
+            !isVerified ? "border-amber-200/80 hover:border-amber-300 transition-all cursor-pointer" : "border-gray-100/80 cursor-default"
+          }`}>
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-1.5 ${
+            isVerified ? "bg-emerald-50" : isVerificationPending ? "bg-amber-50" : "bg-gray-50"
+          }`}>
+            {isVerified ? (
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            ) : isVerificationPending ? (
+              <Clock className="w-4 h-4 text-amber-600" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-gray-400" />
+            )}
           </div>
-          <p className="stat-value text-sm font-bold text-gray-900">{verifiedLevels[verifiedLevel]}</p>
+          <p className={`stat-value text-sm font-bold ${
+            isVerified ? "text-emerald-600" : isVerificationPending ? "text-amber-600" : "text-gray-400"
+          }`}>{verifiedLevels[verifiedLevel]}</p>
           <p className="stat-label">التوثيق</p>
-        </div>
+        </button>
       </div>
 
       {/* Menu */}
