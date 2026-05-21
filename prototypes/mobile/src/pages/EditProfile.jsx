@@ -3,26 +3,37 @@ import { useNavigate } from "react-router-dom";
 import { Save, User, Phone } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { api } from "../services/apiClient";
 import Layout from "../components/Layout";
 
 export default function EditProfile() {
   const navigate = useNavigate();
-  const { user, login } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { showToast } = useToast();
   const [name, setName] = useState(user?.name || "");
-  const [phone, setPhone] = useState(user?.phone || "");
+  const [phone, setPhone] = useState(user?.phone?.replace("+966", "") || "");
   const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = {};
     if (!name.trim()) errs.name = "يرجى إدخال الاسم";
-    if (!phone || phone.length < 9) errs.phone = "يرجى إدخال رقم جوال صحيح";
+    if (!phone || phone.length !== 9) errs.phone = "رقم الجوال يجب أن يكون 9 أرقام";
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
-    login(phone, user?.role, name);
-    showToast("تم حفظ التغييرات", "success");
-    setTimeout(() => navigate("/profile", { replace: true }), 500);
+    setSaving(true);
+    try {
+      const fullPhone = `+966${phone}`;
+      await api.put("/users/me", { name: name.trim(), phone: fullPhone });
+      await refreshUser();
+      showToast("تم حفظ التغييرات", "success");
+      setTimeout(() => navigate("/profile", { replace: true }), 500);
+    } catch (err) {
+      showToast(err.message || "فشل حفظ التغييرات", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -51,9 +62,9 @@ export default function EditProfile() {
           {errors.phone && <p className="text-xs text-red-500 mt-1.5">{errors.phone}</p>}
           </div>
         </div>
-        <button type="submit"
-          className="w-full bg-primary text-white font-bold py-3 btn-pill hover:bg-primary-dark active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-          <Save className="w-4 h-4" /> حفظ التغييرات
+        <button type="submit" disabled={saving}
+          className="w-full bg-primary text-white font-bold py-3 btn-pill hover:bg-primary-dark active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+          <Save className="w-4 h-4" /> {saving ? "جاري الحفظ..." : "حفظ التغييرات"}
         </button>
       </form>
     </Layout>

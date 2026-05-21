@@ -7,6 +7,8 @@ router.post("/send-otp", async (req, res, next) => {
   try {
     const { phone, role, name } = req.body;
     if (!phone) return res.status(400).json({ success: false, error: { code: "VALIDATION_ERROR", message: "رقم الجوال مطلوب" } });
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length !== 12) return res.status(400).json({ success: false, error: { code: "VALIDATION_ERROR", message: "رقم الجوال يجب أن يكون 12 رقم (مفتاح الدولة + 9 أرقام)" } });
     if (!role) return res.status(400).json({ success: false, error: { code: "VALIDATION_ERROR", message: "نوع المستخدم مطلوب" } });
     if (!["tenant", "lessor", "admin"].includes(role)) return res.status(400).json({ success: false, error: { code: "VALIDATION_ERROR", message: "نوع المستخدم غير صالح" } });
 

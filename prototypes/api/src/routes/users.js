@@ -63,6 +63,36 @@ router.get("/me/verification-docs", authenticate, async (req, res, next) => {
   }
 });
 
+// Update current user profile (name, phone)
+router.put("/me", authenticate, async (req, res, next) => {
+  try {
+    const { name, phone } = req.body;
+    const updates = {};
+    if (name !== undefined) {
+      if (!name.trim()) throw new AppError(400, "VALIDATION_ERROR", "الاسم لا يمكن أن يكون فارغاً");
+      updates.name = name.trim();
+    }
+    if (phone !== undefined) {
+      if (!phone.trim()) throw new AppError(400, "VALIDATION_ERROR", "رقم الجوال لا يمكن أن يكون فارغاً");
+      const digits = phone.replace(/\D/g, "");
+      if (digits.length !== 12) throw new AppError(400, "VALIDATION_ERROR", "رقم الجوال يجب أن يكون 12 رقم (مفتاح الدولة + 9 أرقام)");
+      const existing = UserModel.findByPhone(phone);
+      if (existing && existing.id !== req.user.id) throw new AppError(409, "CONFLICT", "رقم الجوال مستخدم بالفعل");
+      updates.phone = phone.trim();
+    }
+    if (Object.keys(updates).length === 0) {
+      const user = UserModel.findById(req.user.id);
+      const { otp_code: _otp, otp_expires_at: _exp, password: _pw, ...safe } = user;
+      return res.json({ success: true, data: safe });
+    }
+    const updated = UserModel.updateUser(req.user.id, updates);
+    const { otp_code: _otp, otp_expires_at: _exp, password: _pw, ...safe } = updated;
+    res.json({ success: true, data: safe });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Get user stats (rating, transactions count)
 router.get("/me/stats", authenticate, async (req, res, next) => {
   try {

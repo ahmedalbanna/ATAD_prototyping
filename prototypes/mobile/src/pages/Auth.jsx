@@ -22,19 +22,15 @@ export default function Auth() {
   const [step, setStep] = useState("phone");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
-  const [name, setName] = useState("");
+
   const [role, setRole] = useState("tenant");
   const [showPhoneLogin, setShowPhoneLogin] = useState(false);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
-    if (phone.length < 6) return;
-    if (mode === "register" && !name.trim()) {
-      showToast("يرجى إدخال الاسم الكامل", "error");
-      return;
-    }
+    if (phone.length !== 9) return;
     try {
-      await sendOtp(phone, role, mode === "register" ? name : undefined);
+      await sendOtp(phone, role);
       setStep("otp");
     } catch (err) {
       showToast(err.message || "فشل إرسال رمز التحقق", "error");
@@ -146,11 +142,11 @@ export default function Auth() {
                 <div className="flex gap-2">
                   <span className="flex items-center px-3 border-2 border-gray-200 rounded-xl text-gray-500 bg-white text-sm shrink-0">+966</span>
                   <input type="tel" inputMode="numeric" value={phone}
-                    onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 15))}
+                    onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
                     placeholder="500000000"
                     className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors bg-white" />
                 </div>
-                <button type="submit" disabled={phone.length < 6 || loading}
+                <button type="submit" disabled={phone.length !== 9 || loading}
                   className="w-full bg-primary text-white font-bold py-2.5 btn-pill transition-all hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
                   {loading && <Loader className="w-4 h-4 animate-spin" />}
                   تسجيل الدخول
@@ -159,16 +155,12 @@ export default function Auth() {
             )}
           </>
         ) : (
-          /* Register mode - with role selection, no trial accounts */
+          /* Register mode - phone only, name & role collected in onboarding */
           <form onSubmit={handleSendOtp} className="space-y-4">
-            <input type="text" value={name} onChange={e => setName(e.target.value)}
-              placeholder="الاسم الكامل"
-              className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors bg-gray-50/50" />
-
             <div className="flex gap-2">
               <span className="flex items-center px-3 border-2 border-gray-200 rounded-xl text-gray-500 bg-gray-50 text-sm shrink-0">+966</span>
               <input type="tel" inputMode="numeric" value={phone}
-                onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 15))}
+                onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
                 placeholder="500000000"
                 className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors bg-gray-50/50" />
             </div>
@@ -188,7 +180,7 @@ export default function Auth() {
               })}
             </div>
 
-            <button type="submit" disabled={phone.length < 6 || loading}
+            <button type="submit" disabled={phone.length !== 9 || loading}
               className="w-full bg-primary text-white font-bold py-3 btn-pill transition-all hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               {loading && <Loader className="w-4 h-4 animate-spin" />}
               إنشاء حساب

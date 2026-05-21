@@ -10,8 +10,7 @@ export async function sendOtp(phone, role, name) {
   let user = UserModel.findByPhone(phone);
 
   if (!user) {
-    if (!name) throw new AppError(400, "VALIDATION_ERROR", "الاسم مطلوب للتسجيل");
-    user = UserModel.create({ name, phone, role });
+    user = UserModel.create({ name: name || "مستخدم", phone, role });
   }
 
   const code = String(Math.floor(100000 + Math.random() * 900000));
